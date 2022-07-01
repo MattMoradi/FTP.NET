@@ -1,13 +1,17 @@
-﻿using FluentFTP;
-namespace ftp
+﻿using System;
+using FluentFTP;
+
+namespace Client
 {
-    class program
+    class Program
     {
         static void Main(string[] args)
         {
            FtpClient client = new FtpClient();
 
-            if(Connect(ref client))
+            Console.WriteLine("FTP.NET v1.0");
+
+            if(Connection.Connect(ref client))
                 Console.WriteLine("Successfully connected to server!");
             else
                 Console.WriteLine("ERROR: did not connect to server!");
@@ -16,27 +20,6 @@ namespace ftp
             Console.WriteLine(client.Credentials.UserName);
             Console.WriteLine(client.Credentials.Password);
             Console.WriteLine(client.Host + ":" + client.Port);
-        }
-
-        static public bool Connect(ref FtpClient client)
-        {
-            Console.WriteLine("\nEnter the server you want to join");
-            client.Host = Console.ReadLine();
-            Console.WriteLine("Enter the username:");
-            client.Credentials.UserName = Console.ReadLine();
-            Console.WriteLine("Enter the password:");
-            client.Credentials.Password = Console.ReadLine();
-
-            try
-            {
-                client.AutoConnect();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            
-            return client.IsAuthenticated;
         }
     }
 }
