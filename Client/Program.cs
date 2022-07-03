@@ -20,6 +20,10 @@ namespace Client
             Console.WriteLine(client.Credentials.UserName);
             Console.WriteLine(client.Credentials.Password);
             Console.WriteLine(client.Host + ":" + client.Port);
+
+            
+            Logger logger = new Logger(client.Credentials.UserName);
+            logger.Log("Hello World!");
         }
     }
 }
