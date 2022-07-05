@@ -2,7 +2,9 @@
 Console.WriteLine("Hello, World!");
 
 
-void listFiles(String filepath)
+// Lists directories and files on the local machine
+// TODO: Add error checking, move method to more sensible location
+static void list_local(String filepath)
 {
     DirectoryInfo directory = new DirectoryInfo(@filepath);
     DirectoryInfo[] sub_directories = directory.GetDirectories();
@@ -23,4 +25,5 @@ void listFiles(String filepath)
     }
 }
 
-listFiles("C:\\");
+// For local testing purposes, remove.
+list_local("C:\\");
