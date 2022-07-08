@@ -2,6 +2,7 @@
 using System.Reflection;
 using CommandLine;
 using FluentFTP;
+using Figgle;
 
 namespace Client
 {
@@ -13,7 +14,9 @@ namespace Client
         {
            FtpClient client = new FtpClient();
 
-            Console.WriteLine("FTP.NET");
+            Console.WriteLine("FTP Client v1.0");
+
+            Console.WriteLine(FiggleFonts.Big.Render("FTP. NET"));
 
             /*
             if(Connection.Connect(ref client))
