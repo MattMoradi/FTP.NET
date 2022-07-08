@@ -40,6 +40,8 @@ namespace Client
 
         public static int Disconnect(ref FtpClient client)
         {
+            client.Disconnect();
+            Console.WriteLine("--- All Connections Terminated ---\n");
             return 0;
         }
 
