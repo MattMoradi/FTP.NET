@@ -23,6 +23,7 @@ namespace Client
 
         public static int Create(ref FtpClient client, Commands.CreateDirectory directory)
         {
+            client.CreateDirectoryAsync(directory.ToString());
             return 0;
         }
 
