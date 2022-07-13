@@ -40,7 +40,7 @@ namespace Client
         /// <param name="client">ftpClient on which potential file to rename exists.</param>
         /// <returns>0 if the file was renamed successfully, -1 if it failed.</returns>
         /// <exception cref="Exception">Could be library call critical errors or System.IO.Directory failure.</exception>
-        public static int Rename(FtpClient client, Commands.Rename file)
+        public static int Rename(ref FtpClient client, Commands.Rename file)
         {
             int result = -1;
             try
