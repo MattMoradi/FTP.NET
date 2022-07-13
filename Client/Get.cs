@@ -9,9 +9,13 @@ namespace Client
         public static int File(ref FtpClient client, Commands.Get files)
         {
             Console.WriteLine("file: " + files.File);
-            
+
             if (files.Files.Count() > 1)
-                return MultipleFiles(client, files.Files);
+            {
+                Console.WriteLine($"Enter local File Path for download or press enter to skip and use current directory: ");
+                var localDir = Console.ReadLine() ?? "";
+                return MultipleFiles(client, files.Files, localDir);
+            }
             return 0;
         }
 

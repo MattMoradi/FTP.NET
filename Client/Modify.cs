@@ -10,45 +10,28 @@ namespace Client
             return 0;
         }
 
-        public static int Permissions(ref FtpClient client, Commands.Permissions file)
-        {
-            return Permissions(client);
-        }
-
         /// <summary>
         /// Changes the permissions of a specified remote file.
         /// </summary>
         /// <param name="client">Ftp server endpoint.</param>
+        /// <param name="file">Permission levels and file path</param>
         /// <returns>0 if successful else -1.</returns>
         /// <exception cref="Exception">Library methods could fail.</exception>
-        public static int Permissions(FtpClient client)
+        public static int Permissions(ref FtpClient client, Commands.Permissions file)
         {
+            
             int result = -1;
-            var fPath = string.Empty;
             try
             {
-                // Permission level defaults to read only
-                int permLevel = 4;
-                Console.WriteLine("Enter File Path: ");
-                fPath = Console.ReadLine() ?? String.Empty;
-
-                Console.WriteLine("Enter Permission in CHMOD Format: ");
-                int.TryParse(Console.ReadLine() ?? String.Empty, out permLevel);
-
                 // Invoke library method to execute permission change.
-                client.SetFilePermissions(fPath, permLevel);
+                client.SetFilePermissions(file.FilePath, ((file.Owner * 100) + (file.Group * 10) + file.Others));
                 result = 0;
             }
             catch (Exception exc)
             {
-                throw new Exception($"[Client.Modify.Permissions(client)] Failed to Change Permissions of {fPath}. Auto Exception Message: {exc.Message}");
+                throw new Exception($"[Client.Modify.Permissions(client)] Failed to Change Permissions of {file.FilePath}. Auto Exception Message: {exc.Message}");
             }
             return result;
-        }
-
-        public static int Rename(ref FtpClient client, Commands.Rename file)
-        {
-            return Rename(client);
         }
 
         /// <summary>
@@ -57,35 +40,27 @@ namespace Client
         /// <param name="client">ftpClient on which potential file to rename exists.</param>
         /// <returns>0 if the file was renamed successfully, -1 if it failed.</returns>
         /// <exception cref="Exception">Could be library call critical errors or System.IO.Directory failure.</exception>
-        public static int Rename(FtpClient client)
+        public static int Rename(FtpClient client, Commands.Rename file)
         {
             int result = -1;
-            string oldName = string.Empty;
-            string newName = string.Empty;
             try
             {
-                Console.WriteLine("Enter Old File Path: ");
-                oldName = Console.ReadLine() ?? String.Empty;
-
-                Console.WriteLine("Enter File Path Ending With Rename Value: ");
-                newName = Console.ReadLine() ?? String.Empty;
-
                 // Check if the file exists on the remote server.
-                if (client.FileExists(oldName))
+                if (client.FileExists(file.Name))
                 {
                     // rename remote file
-                    result = client.MoveFile(oldName, newName) ? 0 : -1;
+                    result = client.MoveFile(file.Name, file.Remote) ? 0 : -1;
                 }
                 // check if local file exists with given name
-                else if (Directory.Exists(oldName))
+                else if (Directory.Exists(file.Name))
                 {
-                    Directory.Move(oldName, newName);
+                    Directory.Move(file.Name, file.Local);
                     result = 0;
                 }
             }
             catch(Exception exc)
             {
-                throw new Exception($"[Client.Modify.Rename(client, file, oNm, nNm)] Failed to rename file {oldName}. Auto Exception Msg: {exc.Message}");
+                throw new Exception($"[Client.Modify.Rename(client, file, oNm, nNm)] Failed to rename file {file.Name}. Auto Exception Msg: {exc.Message}");
             }
 
             return result;
