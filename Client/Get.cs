@@ -33,19 +33,23 @@ namespace Client
                 }
                 else if (directory.Remote != null)
                 {
-                    // do remote stuff
+                    throw new InvalidOperationException("ls -r not implemented");         // to be implemented!
                 }
 
                 DirectoryInfo dir = new DirectoryInfo(path);
                 DirectoryInfo[] sub_directories = dir.GetDirectories();
                 FileInfo[] files = dir.GetFiles();
 
+                // List sub-directories
                 foreach (DirectoryInfo i in sub_directories)
                 {
                     Console.WriteLine(".\\{0}", i.Name);
                 }
+
                 if (sub_directories.Length > 0)
                     Console.WriteLine();
+
+                // List files
                 foreach (FileInfo j in files)
                 {
                     Console.WriteLine("{0}", j.Name);
@@ -58,7 +62,7 @@ namespace Client
             }
             catch(Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e + "\n");
             }
             return 0;
         }
