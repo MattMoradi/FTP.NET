@@ -21,8 +21,6 @@ namespace Client
 
             [Option('r', "remote", Required = false, HelpText = "List directories & files on remote servers")]
             public string? Remote { get; set; }
-
-
         }
 
         [Verb("get", HelpText = "Get files from remote server")]

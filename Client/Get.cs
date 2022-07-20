@@ -43,7 +43,7 @@ namespace Client
                 // List sub-directories
                 foreach (DirectoryInfo i in sub_directories)
                 {
-                    Console.WriteLine(".\\{0}", i.Name);
+                    Console.WriteLine("{0}/", i.Name);
                 }
 
                 if (sub_directories.Length > 0)
@@ -52,7 +52,7 @@ namespace Client
                 // List files
                 foreach (FileInfo j in files)
                 {
-                    Console.WriteLine("{0}", j.Name);
+                    Console.WriteLine(j.Name);
                 }
             }
             catch(DirectoryNotFoundException e)
