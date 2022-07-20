@@ -23,46 +23,42 @@ namespace Client
 
         public static int List(ref FtpClient client, Commands.List directory)
         {
-            if (directory.Local != null)
+            Console.WriteLine();
+            string path = "./";
+            try
             {
-                try
+                if (directory.Local != null)
                 {
-                    // throws an exception if invalid
-                    string path = Path.GetFullPath(directory.Local);
-
-                    // collect info
-                    DirectoryInfo dir = new DirectoryInfo(path);
-                    DirectoryInfo[] sub_directories = dir.GetDirectories();
-                    FileInfo[] files = dir.GetFiles();
-
-                    // list directories
-                    Console.WriteLine();
-                    foreach (DirectoryInfo i in sub_directories)
-                    {
-                        Console.WriteLine("./{0}", i.Name);
-                    }
-
-                    // list files
-                    Console.WriteLine();
-                    foreach (FileInfo j in files)
-                    {
-                        Console.WriteLine("{0}", j.Name);
-                    }
+                    path = Path.GetFullPath(directory.Local);
                 }
-                catch(Exception e)
+                else if (directory.Remote != null)
                 {
-                    Console.WriteLine(e);
+                    // do remote stuff
                 }
-            }
 
-            else if (directory.Remote != null)
-            {
-                Console.WriteLine("Remote");
+                DirectoryInfo dir = new DirectoryInfo(path);
+                DirectoryInfo[] sub_directories = dir.GetDirectories();
+                FileInfo[] files = dir.GetFiles();
+
+                foreach (DirectoryInfo i in sub_directories)
+                {
+                    Console.WriteLine(".\\{0}", i.Name);
+                }
+                if (sub_directories.Length > 0)
+                    Console.WriteLine();
+                foreach (FileInfo j in files)
+                {
+                    Console.WriteLine("{0}", j.Name);
+                }
+                Console.WriteLine();
             }
-            // invlalid input
-            else
+            catch(DirectoryNotFoundException e)
             {
-                Console.WriteLine("Invalid input. Usage: ls -l c:/");
+                Console.WriteLine("Directory not found\n");
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
             }
             return 0;
         }
