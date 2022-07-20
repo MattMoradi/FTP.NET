@@ -33,7 +33,7 @@ namespace Client
                 }
                 else if (directory.Remote != null)
                 {
-                    throw new InvalidOperationException("ls -r not implemented");         // to be implemented!
+                    throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
                 }
 
                 DirectoryInfo dir = new DirectoryInfo(path);
@@ -54,16 +54,16 @@ namespace Client
                 {
                     Console.WriteLine("{0}", j.Name);
                 }
-                Console.WriteLine();
             }
             catch(DirectoryNotFoundException e)
             {
-                Console.WriteLine("Directory not found\n");
+                Console.WriteLine("Directory not found");
             }
             catch(Exception e)
             {
-                Console.WriteLine(e + "\n");
+                Console.WriteLine(e);
             }
+            Console.WriteLine();
             return 0;
         }
     }
