@@ -23,7 +23,47 @@ namespace Client
 
         public static int List(ref FtpClient client, Commands.List directory)
         {
-            Console.WriteLine("list");
+            Console.WriteLine();
+            string path = "./";
+            try
+            {
+                if (directory.Local != null)
+                {
+                    path = Path.GetFullPath(directory.Local);
+                }
+                else if (directory.Remote != null)
+                {
+                    throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
+                }
+
+                DirectoryInfo dir = new DirectoryInfo(path);
+                DirectoryInfo[] sub_directories = dir.GetDirectories();
+                FileInfo[] files = dir.GetFiles();
+
+                // List sub-directories
+                foreach (DirectoryInfo i in sub_directories)
+                {
+                    Console.WriteLine("{0}/", i.Name);
+                }
+
+                if (sub_directories.Length > 0)
+                    Console.WriteLine();
+
+                // List files
+                foreach (FileInfo j in files)
+                {
+                    Console.WriteLine(j.Name);
+                }
+            }
+            catch(DirectoryNotFoundException e)
+            {
+                Console.WriteLine("Directory not found");
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            Console.WriteLine();
             return 0;
         }
     }

@@ -11,7 +11,7 @@ namespace Client
             public string IP { get; set; }
         }
 
-        [Verb("ls", HelpText = "Disconnect from the remote server")]
+        [Verb("ls", HelpText = "List directories and files")]
         public class List
         {
             // this is just one way of separating between remote and local. could also be path based instead
