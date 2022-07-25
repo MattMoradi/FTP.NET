@@ -21,22 +21,22 @@ namespace Client
             return 0;
         }
 
-        public static int List(ref FtpClient client, Commands.List directory)
+        public static int List(ref FtpClient client, Commands.List directory, ref Program.FilePath path)
         {
             Console.WriteLine();
-            string path = "./";
+            string filePath = "./";
             try
             {
                 if (directory.Local != null)
                 {
-                    path = Path.GetFullPath(directory.Local);
+                    filePath = Path.GetFullPath(directory.Local);
                 }
                 else if (directory.Remote != null)
                 {
                     throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
                 }
 
-                DirectoryInfo dir = new DirectoryInfo(path);
+                DirectoryInfo dir = new DirectoryInfo(filePath);
                 DirectoryInfo[] sub_directories = dir.GetDirectories();
                 FileInfo[] files = dir.GetFiles();
 

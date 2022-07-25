@@ -9,21 +9,18 @@ namespace Client
     public class Program
     {
         //public static FtpClient? Client { get; set; }
+        public struct FilePath
+        {
+            public string local { get; set; }
+            public string remote { get; set; }
+        }
 
         static void Main(string[] args)
         {
-           FtpClient client = new FtpClient();
-
+            FtpClient client = new FtpClient();
+            FilePath path = new FilePath();
             Console.WriteLine("FTP Client v1.0");
-
             Console.WriteLine(FiggleFonts.Big.Render("FTP. NET"));
-
-            /*
-            if(Connection.Connect(ref client))
-                Console.WriteLine("Successfully connected to server!");
-            else
-                Console.WriteLine("ERROR: did not connect to server!");
-            */
 
             while (true)
             {
@@ -39,7 +36,7 @@ namespace Client
                     Commands.Put, Commands.CreateDirectory, Commands.Delete, Commands.Permissions, Commands.Copy, Commands.Save,
                     Commands.Rename>(args).MapResult(
                 (Commands.Connect opts) => Connection.Connect(ref client, opts),
-                (Commands.List opts) => Get.List(ref client, opts),
+                (Commands.List opts) => Get.List(ref client, opts, ref path),
                 (Commands.Get opts) => Get.File(ref client, opts),
                 (Commands.Disconnect opts) => Connection.Disconnect(ref client),
                 (Commands.Quit opts) => Connection.Exit(),
@@ -52,16 +49,6 @@ namespace Client
                 (Commands.Rename opts) => Modify.Rename(ref client, opts),
                 errs => 1);
             }
-
-            /*
-            Console.WriteLine(client.Credentials.UserName);
-            Console.WriteLine(client.Credentials.Password);
-            Console.WriteLine(client.Host + ":" + client.Port);
-
-            
-            Logger logger = new Logger(client.Credentials.UserName);
-            logger.Log("Hello World!");
-            */
         }
     }
 }
