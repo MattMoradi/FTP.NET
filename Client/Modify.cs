@@ -35,9 +35,10 @@ namespace Client
         }
 
         /// <summary>
-        /// Will rename a file on local or remote directory depending on where it exists.
+        /// Renames a local or remote file based on the supplied commands.
         /// </summary>
         /// <param name="client">ftpClient on which potential file to rename exists.</param>
+        /// <param name="file">Rename command that specifies to rename local or remtoe file and file names to use.</param>
         /// <returns>0 if the file was renamed successfully, -1 if it failed.</returns>
         /// <exception cref="Exception">Could be library call critical errors or System.IO.Directory failure.</exception>
         public static int Rename(ref FtpClient client, Commands.Rename file)
@@ -46,21 +47,21 @@ namespace Client
             try
             {
                 // Check if the file exists on the remote server.
-                if (client.FileExists(file.Name))
+                if (!string.IsNullOrEmpty(file.Remote) && client.IsConnected)
                 {
                     // rename remote file
-                    result = client.MoveFile(file.Name, file.Remote) ? 0 : -1;
+                    result = client.MoveFile(file.OldName, file.NewName) ? 0 : -1;
                 }
                 // check if local file exists with given name
-                else if (Directory.Exists(file.Name))
+                else if (!string.IsNullOrEmpty(file.Local))
                 {
-                    Directory.Move(file.Name, file.Local);
+                    Directory.Move(file.OldName, file.Local);
                     result = 0;
                 }
             }
             catch(Exception exc)
             {
-                throw new Exception($"[Client.Modify.Rename(client, file, oNm, nNm)] Failed to rename file {file.Name}. Auto Exception Msg: {exc.Message}");
+                throw new Exception($"[Client.Modify.Rename(client, file, oNm, nNm)] Failed to rename file {file.OldName}. Auto Exception Msg: {exc.Message}");
             }
 
             return result;

@@ -11,16 +11,14 @@ namespace Client
             Console.WriteLine("file: " + files.File);
 
             if (files.Files.Count() > 1)
-            {
-                Console.WriteLine($"Enter local File Path for download or press enter to skip and use current directory: ");
-                var localDir = Console.ReadLine() ?? "";
-                return MultipleFiles(client, files.Files, localDir);
+            { 
+                return MultipleFiles(client, files.Files, files.LocalPath);
             }
             return 0;
         }
 
         /// <summary>
-        /// Uses FluentFtp library method to find files on a remote server as a query executed against the passed int
+        /// Uses FluentFtp library method to find files on a remote server as a query executed against the passed in
         /// ftpClient.
         /// </summary>
         /// <param name="ftpClient">Connection to remote ftp protocal server.</param>
@@ -28,11 +26,11 @@ namespace Client
         /// <param name="localDir">Local directory to save files.</param>
         /// <returns>Number of files found.</returns>
         /// <exception cref="Exception">Library method could fail.</exception>
-        public static int MultipleFiles(FtpClient ftpClient, IEnumerable<string> remoteDirs, string localDir = "")
+        public static int MultipleFiles(FtpClient ftpClient, IEnumerable<string> remoteDirs, string localDir)
         {
             try
             {
-                return ftpClient.DownloadFiles(string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir, remoteDirs);
+            return ftpClient.DownloadFiles(string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir, remoteDirs);
             }
             catch(Exception exc)
             {

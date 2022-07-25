@@ -29,6 +29,9 @@ namespace Client
             [Value(0, MetaName = "file", HelpText = "File to get from remote server")]
             public string? File { get; set; }
 
+            [Value(1, MetaName = "local", HelpText = "Local file path to save files.")]
+            public string LocalPath { get; set; } = string.Empty;
+
             [Option('m', "multiple", Required = false, HelpText = "Get multiple files from remote")]
             public IEnumerable<string>? Files { get; set; }
         }
@@ -91,11 +94,14 @@ namespace Client
         [Verb("save", HelpText = "Save connection information")]
         internal class Save { }
 
-        [Verb("rename", HelpText = "Save connection information")]
+        [Verb("rename", HelpText = "Rename file")]
         public class Rename
         {
             [Value(0, MetaName = "default", HelpText = "File to rename on remote server (default)")]
-            public string Name { get; set; } = String.Empty;
+            public string OldName { get; set; } = String.Empty;
+
+            [Value(1, MetaName = "newname", HelpText = "File rename value.")]
+            public string NewName { get; set; } = String.Empty;
 
             [Option('l', "local", Required = false, HelpText = "Rename file on local machine")]
             public string Local { get; set; } = String.Empty;
