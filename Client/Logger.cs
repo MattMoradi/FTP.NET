@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Client
 {
-    public class Logger
+    internal class Logger
     {
         private string mFilePath;
 
