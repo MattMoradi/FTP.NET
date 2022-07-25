@@ -7,10 +7,56 @@ namespace Client
     {
         public static int File(ref FtpClient client, Commands.Get files)
         {
-            Console.WriteLine("file: " + files.File);
+            if (!client.IsAuthenticated)
+            {
+                Console.WriteLine("ERROR: No connection to remote server!");
+                return -1;
+            }
+
+            Console.WriteLine("file: " + files.Path);
 
             if (files.Files.Count() > 1)
                 return MultipleFiles(files.Files);
+
+            Action<FtpProgress> progress = delegate (FtpProgress p)
+            {
+                if (p.Progress == 1)
+                {
+                    // all done!
+                }
+                else
+                {
+                    // percent done = (p.Progress * 100)
+                }
+            };
+
+            try
+            {
+                string fileName = files.Path.Substring(files.Path.LastIndexOf('/') + 1);
+
+                if (files.Local != null)
+                {
+                    string localPath;
+                    if (files.Local.EndsWith('\\') || files.Local.EndsWith('/'))
+                    {
+                        localPath = files.Local.Substring(0, (files.Local.Length - 1));
+                        client.DownloadFile(localPath + fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
+                    }
+                    else
+                    {
+                        char slash = Path.DirectorySeparatorChar;
+                        client.DownloadFile(files.Path + slash + fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
+                    }
+                }
+                else if (files.Path != null)
+                    client.DownloadFile(fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
+                else
+                    Console.WriteLine("ERROR: File not specified!");
+            }
+            catch (Exception x)
+            {
+                Console.WriteLine(x.ToString());
+            }
             return 0;
         }
 

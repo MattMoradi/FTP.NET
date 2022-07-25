@@ -27,7 +27,10 @@ namespace Client
         public class Get
         {
             [Value(0, MetaName = "file", HelpText = "File to get from remote server")]
-            public string? File { get; set; }
+            public string? Path { get; set; }
+
+            [Option('l', "localpath", Required = false, HelpText = "Specify a local path to save the file to")]
+            public string? Local { get; set; }
 
             [Option('m', "multiple", Required = false, HelpText = "Get multiple files from remote")]
             public IEnumerable<string>? Files { get; set; }
