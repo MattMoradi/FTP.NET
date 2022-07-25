@@ -34,21 +34,7 @@ namespace Client
             {
                 string fileName = files.Path.Substring(files.Path.LastIndexOf('/') + 1);
 
-                if (files.Local != null)
-                {
-                    string localPath;
-                    if (files.Local.EndsWith('\\') || files.Local.EndsWith('/'))
-                    {
-                        localPath = files.Local.Substring(0, (files.Local.Length - 1));
-                        client.DownloadFile(localPath + fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
-                    }
-                    else
-                    {
-                        char slash = Path.DirectorySeparatorChar;
-                        client.DownloadFile(files.Path + slash + fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
-                    }
-                }
-                else if (files.Path != null)
+                if (files.Path != null)
                     client.DownloadFile(fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
                 else
                     Console.WriteLine("ERROR: File not specified!");
