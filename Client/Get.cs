@@ -21,50 +21,74 @@ namespace Client
             return 0;
         }
 
-        public static int List(ref FtpClient client, Commands.List directory, ref Program.FilePath path)
+        public static int List(ref FtpClient client, Commands.List directory, in Program.FilePath path, in string[] args)
         {
-            Console.WriteLine();
-            string filePath = "./";
-            try
+            if (args.Contains("-r"))
             {
-                if (directory.Local != null)
+                try
                 {
-                    filePath = Path.GetFullPath(directory.Local);
+                    Console.WriteLine(path.Remote);
+                    FtpListItem[] items = client.GetListing(path.Remote);
+
+                    foreach (FtpListItem item in items)
+                        Console.WriteLine(item.Name);
                 }
-                else if (directory.Remote != null)
+                catch (Exception ex)
                 {
-                    throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
+                    if (ex.InnerException != null)
+                        Console.WriteLine(ex.InnerException.Message);
+                    else
+                        Console.WriteLine(ex.Message);
+                    return 0;
                 }
+                return 1;
+            }
 
-                DirectoryInfo dir = new DirectoryInfo(filePath);
-                DirectoryInfo[] sub_directories = dir.GetDirectories();
-                FileInfo[] files = dir.GetFiles();
-
-                // List sub-directories
-                foreach (DirectoryInfo i in sub_directories)
+            else if (args.Contains("-l"))//i'll let Peter configure this part for his section
+            {
+                Console.WriteLine();
+                string filePath = "./";
+                try
                 {
-                    Console.WriteLine("{0}/", i.Name);
+                    if (directory.Local != null)
+                    {
+                        filePath = Path.GetFullPath(directory.Local);
+                    }
+                    else if (directory.Remote != null)
+                    {
+                        throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
+                    }
+
+                    DirectoryInfo dir = new DirectoryInfo(filePath);
+                    DirectoryInfo[] sub_directories = dir.GetDirectories();
+                    FileInfo[] files = dir.GetFiles();
+
+                    // List sub-directories
+                    foreach (DirectoryInfo i in sub_directories)
+                    {
+                        Console.WriteLine("{0}/", i.Name);
+                    }
+
+                    if (sub_directories.Length > 0)
+                        Console.WriteLine();
+
+                    // List files
+                    foreach (FileInfo j in files)
+                    {
+                        Console.WriteLine(j.Name);
+                    }
                 }
-
-                if (sub_directories.Length > 0)
-                    Console.WriteLine();
-
-                // List files
-                foreach (FileInfo j in files)
+                catch (DirectoryNotFoundException e)
                 {
-                    Console.WriteLine(j.Name);
+                    Console.WriteLine("Directory not found");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
             }
-            catch(DirectoryNotFoundException e)
-            {
-                Console.WriteLine("Directory not found");
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            Console.WriteLine();
-            return 0;
+                Console.WriteLine();
+                return 0;
         }
     }
 }

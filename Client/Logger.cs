@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Client
 {
-    internal class Logger
+    public class Logger
     {
         private string mFilePath;
 
@@ -22,6 +22,15 @@ namespace Client
             streamWriter.WriteLine(message + "\t" + DateTime.Now);
             streamWriter.Close();
         }
+        public void Log(string[] message)
+        {
+            StreamWriter streamWriter = File.AppendText(mFilePath + ".txt");
+            for (int i = 0; i < message.Length; i++)
+                streamWriter.Write(message[i] + " ");
+            streamWriter.WriteLine("\t" + DateTime.Now);
+            streamWriter.Close();
+        }
+
 
         //Creates new directory to store log information
         //Directory is located: ftp/Client/bin/Debug/net6.0/Users
