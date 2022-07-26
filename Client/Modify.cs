@@ -7,6 +7,22 @@ namespace Client
     {
         public static int Delete(ref FtpClient client, Commands.Delete file)
         {
+            bool isDir = client.DirectoryExists(file.File);
+            bool isFile = client.FileExists(file.File);
+
+            if (isDir)
+            {
+                client.DeleteDirectory(file.File);
+            }
+            else if (isFile)
+            {
+                client.DeleteFile(file.File);
+            }
+            else
+            {
+                Console.WriteLine("The specified file/directory does not exist.");
+            }
+
             return 0;
         }
 
