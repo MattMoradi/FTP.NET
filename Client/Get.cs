@@ -10,9 +10,15 @@ namespace Client
         {
             Console.WriteLine("file: " + files.File);
 
-            if (files.Files.Count() > 1)
+            // Check for get multiple
+            if (files.Files != null && files.Files.Count() > 1)
             { 
                 return MultipleFiles(client, files.Files, files.LocalPath);
+            }
+            // else check for get directory
+            else if (!string.IsNullOrEmpty(files.Directory))
+            {
+                return Directory(client, files.Directory, files.LocalPath);
             }
             return 0;
         }
@@ -24,17 +30,38 @@ namespace Client
         /// <param name="ftpClient">Connection to remote ftp protocal server.</param>
         /// <param name="remoteDirs">List of file directories.</param>
         /// <param name="localDir">Local directory to save files.</param>
-        /// <returns>Number of files found.</returns>
-        /// <exception cref="Exception">Library method could fail.</exception>
+        /// <returns>Number of files found or -1 if error occurs.</returns>
         public static int MultipleFiles(FtpClient ftpClient, IEnumerable<string> remoteDirs, string localDir)
         {
             try
             {
-            return ftpClient.DownloadFiles(string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir, remoteDirs);
+                // check if local was provided or not. if not use default.
+                localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
+                
+                // executes download of remoteDirectories to the local location.
+                var result = ftpClient.DownloadFiles(localDir, remoteDirs);
+
+                // let user know where files were downloaded incase local dir not provided
+                if (result > 0)
+                    Console.WriteLine($"Files Found Saved to {localDir}");
+
+                // # files downloaded
+                return result;
+            }
+            catch(ArgumentException aExc)
+            {
+                Console.WriteLine($"Incorrect Parameters: Auto Exception Message {aExc.Message}");
+                return -1;
+            }
+            catch(FtpException ftpExc)
+            {
+                Console.WriteLine($"FtpClient unexpected error, download failed. Auto Exception Msg: {ftpExc.Message}");
+                return -1;
             }
             catch(Exception exc)
             {
-                throw new Exception($"[Client.Get.MultipleFiles(client, IE<rDir>, lDir)] Failed to retrieve multiple files. Auto Exception Msg: {exc.Message}");
+                Console.WriteLine($"Failed to retrieve multiple files. Auto Exception Msg: {exc.Message}");
+                return -1;
             }
         }
 
@@ -44,17 +71,31 @@ namespace Client
         /// <param name="ftpClient">Connection to remote ftp protocal server.</param>
         /// <param name="remoteDir">Remote directory to grab.</param>
         /// <param name="localDir">Local directory where items are saved.</param>
-        /// <returns>Collection of the items downloaded.</returns>
-        /// <exception cref="Exception">Library method could fail.</exception>
-        public static IEnumerable<FtpResult> Directory(FtpClient ftpClient, string remoteDir, string localDir = "")
+        /// <returns>Number of files downloaded from directory.</returns>
+        public static int Directory(FtpClient ftpClient, string remoteDir, string localDir = "")
         {
             try
             {
-                return ftpClient.DownloadDirectory(string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir, remoteDir, FtpFolderSyncMode.Update);
+                var result = 0;
+
+                // execute directory download
+                var dir = ftpClient.DownloadDirectory(string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir, remoteDir, FtpFolderSyncMode.Update);
+
+                // determine how many files were downloaded ignoring the skipped and overwritten files.
+                dir.ForEach(d => { if (d.IsDownload) ++result; });
+                
+                // return number of files downloaded successfully
+                return result;
+            }
+            catch(ArgumentException aExc)
+            {
+                Console.WriteLine($"Incorrect Parameters, {aExc.Message}");
+                return -1;
             }
             catch(Exception exc)
             {
-                throw new Exception($"[Client.Get.Directory(client, rDir, lDir)]: Failed to retrieve directory: {remoteDir}. Auto Generated Exception Msg: {exc.Message}");
+                Console.WriteLine($"Failed to retrieve directory: {remoteDir}. Auto Generated Exception Msg: {exc.Message}");
+                return -1;
             }
         }
 
