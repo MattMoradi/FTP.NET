@@ -11,7 +11,7 @@ namespace Client
             if (commands.IP == null)
             {
                 Console.WriteLine("ERROR: must provide a host name to connect!");
-                return 0;
+                return -1;
             }
 
             client.Host = commands.IP;
@@ -30,19 +30,19 @@ namespace Client
                     Console.WriteLine(ex.InnerException.Message);
                 else
                     Console.WriteLine(ex.Message);
-                return 0;
+                return -1;
             }
 
             if (client.IsAuthenticated)
             {
                 logger = new Logger(client.Credentials.UserName);
                 Console.WriteLine("Successfully connected to server!");
-                return 1;
+                return 0;
             }
             else
             {
                 Console.WriteLine("ERROR: unable to connect to server!");
-                return 0;
+                return -1;
             }
         }
 
