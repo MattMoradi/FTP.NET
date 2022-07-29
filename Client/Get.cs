@@ -172,7 +172,7 @@ namespace Client
         }
 
         //check if current path is at root by counting number of '/'
-        //that occur in the string
+        //characters that occur in the path string
         private static bool IsAtRootDirectory(in string path)
         {
             if (path.Count(f => f == '/') <= 1)
@@ -180,7 +180,7 @@ namespace Client
             return false;
         }
 
-        //Removes the current the directory the user is in from the file path.
+        //Removes the current directory the user is in from the file path.
         //If the user is at the root directory, nothing is removed.
         private static int GoToPrevDirectory(ref Program.FilePath path, in string[] args)
         {
