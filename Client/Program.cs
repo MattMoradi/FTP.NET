@@ -12,6 +12,20 @@ namespace Client
         {
             public string Local { get; set; }
             public string Remote { get; set; }
+            private string StartingLocalPath;
+            private string StartingRemotePath;
+            public void ResetPaths()
+            { 
+                Local = StartingLocalPath;
+                Remote = StartingRemotePath;
+            }
+            public void SetInitalPaths(in string local, in string remote)
+            {
+                Local = local;
+                StartingLocalPath = local;
+                Remote = remote;
+                StartingRemotePath = remote;
+            }
         }
 
         static void Main(string[] args)
@@ -20,8 +34,8 @@ namespace Client
             FilePath path = new ();
             Logger? logger = null;
 
-            path.Local = "/"; //assign the default local path here
-            path.Remote = "/";
+            path.SetInitalPaths("./", "/");
+
 
             Console.WriteLine("FTP Client v1.0");
             Console.WriteLine(FiggleFonts.Big.Render("FTP. NET"));
@@ -38,8 +52,8 @@ namespace Client
 
                 Parser.Default.ParseArguments<Commands.Connect, Commands.List, Commands.Get, Commands.Disconnect, Commands.Quit,
                     Commands.Put, Commands.CreateDirectory, Commands.Delete, Commands.Permissions, Commands.Copy, Commands.Save,
-                    Commands.Rename>(args).MapResult(
-                (Commands.Connect opts) => Connection.Connect(ref client, ref logger, opts),
+                    Commands.ChangeDirectory, Commands.Rename>(args).MapResult(
+                (Commands.Connect opts) => Connection.Connect(ref client, ref logger, opts, ref path),
                 (Commands.List opts) => Get.List(ref client, opts, in path, args),
                 (Commands.Get opts) => Get.File(ref client, opts),
                 (Commands.Disconnect opts) => Connection.Disconnect(ref client, ref logger),
@@ -50,8 +64,9 @@ namespace Client
                 (Commands.Permissions opts) => Modify.Permissions(ref client, opts),
                 (Commands.Copy opts) => Put.Copy(ref client, opts),
                 (Commands.Save opts) => Connection.Save(ref client),
-                (Commands.Rename opts) => Modify.Rename(ref client, opts),
-                errs => 1);
+                (Commands.ChangeDirectory opts) => Get.ChangeDirectory(in client, ref path, in args),
+                (Commands.Rename opts) => Modify.Rename(ref client, opts), errs => 1);
+                
             }
         }
     }

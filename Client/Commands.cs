@@ -93,5 +93,15 @@ namespace Client
             [Option('r', "remote", Required = false, HelpText = "Rename file on remote server")]
             public string? Remote { get; set; }
         }
+
+        [Verb("cd", HelpText = "Change current directory on local machine or remote server")]
+        public class ChangeDirectory
+        {
+            [Value(0, MetaName = "cd", Required = false, HelpText = "Change current directory on local machine or remote server")]
+            [Option('l', "local", Required = false, HelpText = "Change current local directory")]
+            public string? Local { get; set; }
+            [Option('r', "remote", Required = false, HelpText = "Change current remote directory")]
+            public string? Remote { get; set; }
+        }
     }
 }

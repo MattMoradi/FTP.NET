@@ -5,9 +5,9 @@ namespace Client
 {
     public static class Connection
     {
-        public static int Connect(ref FtpClient client, ref Logger logger, Commands.Connect commands)
+        public static int Connect(ref FtpClient client, ref Logger logger, Commands.Connect commands, ref Program.FilePath path)
         {
-
+            
             if (commands.IP == null)
             {
                 Console.WriteLine("ERROR: must provide a host name to connect!");
@@ -23,6 +23,7 @@ namespace Client
             try
             {
                 client.Connect();
+                path.ResetPaths();
             }
             catch (Exception ex)
             {

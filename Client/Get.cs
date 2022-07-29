@@ -31,7 +31,14 @@ namespace Client
                     FtpListItem[] items = client.GetListing(path.Remote);
 
                     foreach (FtpListItem item in items)
-                        Console.WriteLine(item.Name);
+                    {
+                        if(client.DirectoryExists(path.Remote + item.Name))
+                            Console.WriteLine(item.Name + "/");
+                        else 
+                            Console.WriteLine(item.Name);
+                    }
+                        
+                    Console.WriteLine();
                 }
                 catch (Exception ex)
                 {
@@ -39,17 +46,19 @@ namespace Client
                         Console.WriteLine(ex.InnerException.Message);
                     else
                         Console.WriteLine(ex.Message);
-                    return 0;
+                    return -1;
                 }
-                return 1;
+                return 0;
             }
 
             else if (args.Contains("-l"))//i'll let Peter configure this part for his section
             {
                 Console.WriteLine();
-                string filePath = "./";
+                //string filePath = "/";
                 try
                 {
+                    //I don't think this part is needed anymore
+                    /*
                     if (directory.Local != null)
                     {
                         filePath = Path.GetFullPath(directory.Local);
@@ -57,9 +66,9 @@ namespace Client
                     else if (directory.Remote != null)
                     {
                         throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
-                    }
+                    }*/
 
-                    DirectoryInfo dir = new DirectoryInfo(filePath);
+                    DirectoryInfo dir = new DirectoryInfo(path.Local);
                     DirectoryInfo[] sub_directories = dir.GetDirectories();
                     FileInfo[] files = dir.GetFiles();
 
@@ -89,6 +98,122 @@ namespace Client
             }
                 Console.WriteLine();
                 return 0;
+        }
+        public static int ChangeDirectory(in FtpClient client, ref Program.FilePath path, in string[] args)
+        {
+            bool isRemote = args.Contains("-r");
+            bool isLocal = args.Contains("-l");
+
+            if (!client.IsConnected && isRemote)
+            {
+                Console.WriteLine("ERROR: must be connected to a server to change directory!\n");
+                return -1;
+            }
+
+            if (!isRemote && !isLocal)
+            {
+                Console.WriteLine("ERROR: must specify local or remote directory!\n");
+                return -1;
+            }
+           
+            try
+            {
+                //find the index where 'cd' occurs in the args array
+                int index = Array.IndexOf(args, "cd");
+                string tempPath;
+
+                if (index + 1 < args.Length && args[index + 1] == "..")
+                    return GoToPrevDirectory(ref path, in args);
+               
+                if (isRemote)
+                {
+                     tempPath = path.Remote + args[index + 1] + "/";
+
+                    //check if user entered a valid directory to change to
+                    if (!client.DirectoryExists(tempPath))
+                    {
+                        Console.WriteLine("ERROR: No such file exists!\n");
+                        return -1;
+                    }
+                    else
+                    {
+                        path.Remote = tempPath;
+                        Console.WriteLine(path.Remote + "\n");
+                        return 0;
+                    }
+                }
+
+                if (isLocal)
+                {
+                    tempPath = path.Local + args[index + 1] + "/";
+                    if (!Directory.Exists(tempPath))
+                    {
+                        Console.WriteLine("ERROR: No such file exists!\n");
+                        return -1;
+                    }
+                    else
+                    {
+                        path.Local = tempPath;
+                        Console.WriteLine(path.Local + "\n");
+                        return 0;
+                    }
+                }
+                return 0;
+                
+            }
+            catch(Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
+                else
+                    Console.WriteLine(ex.Message);
+                return -1;
+            }
+        }
+
+        //check if current path is at root by counting number of '/'
+        //that occur in the string
+        private static bool IsAtRootDirectory(in string path)
+        {
+            if (path.Count(f => f == '/') <= 1)
+                return true;
+            return false;
+        }
+
+        //Removes the current the directory the user is in from the file path.
+        //If the user is at the root directory, nothing is removed.
+        private static int GoToPrevDirectory(ref Program.FilePath path, in string[] args)
+        {
+            try
+            {
+                if (args.Contains("-r"))
+                {
+                    if (IsAtRootDirectory(path.Remote))
+                        return 0;
+                    string temp = path.Remote.Substring(path.Remote.Substring(0, path.Remote.LastIndexOf("/")).LastIndexOf("/") + 1);
+                    path.Remote = path.Remote.Remove(path.Remote.LastIndexOf(temp));
+                    Console.WriteLine(path.Remote + "\n");
+                    return 0;
+                }
+                if (args.Contains("-l"))
+                {
+                    if (IsAtRootDirectory(path.Local))
+                        return 0;
+                    string temp = path.Local.Substring(path.Local.Substring(0, path.Local.LastIndexOf("/")).LastIndexOf("/") + 1);
+                    path.Local = path.Local.Remove(path.Local.LastIndexOf(temp));
+                    Console.WriteLine(path.Local + "\n");
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
+                else
+                    Console.WriteLine(ex.Message);
+                return -1;
+            }
+            return 0;
         }
     }
 }
