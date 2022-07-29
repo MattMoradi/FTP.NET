@@ -132,7 +132,7 @@ namespace Client
                     //check if user entered a valid directory to change to
                     if (!client.DirectoryExists(tempPath))
                     {
-                        Console.WriteLine("ERROR: No such file exists!\n");
+                        Console.WriteLine("ERROR: No such directory exists!\n");
                         return -1;
                     }
                     else
@@ -148,7 +148,7 @@ namespace Client
                     tempPath = path.Local + args[index + 1] + "/";
                     if (!Directory.Exists(tempPath))
                     {
-                        Console.WriteLine("ERROR: No such file exists!\n");
+                        Console.WriteLine("ERROR: No such directory exists!\n");
                         return -1;
                     }
                     else
