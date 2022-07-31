@@ -7,23 +7,31 @@ namespace Client
     {
         public static int Delete(ref FtpClient client, Commands.Delete file)
         {
-            bool isDir = client.DirectoryExists(file.File);
-            bool isFile = client.FileExists(file.File);
+            if (client.IsAuthenticated)
+            {
+                bool isDir = client.DirectoryExists(file.File);
+                bool isFile = client.FileExists(file.File);
 
-            if (isDir)
-            {
-                client.DeleteDirectory(file.File);
-            }
-            else if (isFile)
-            {
-                client.DeleteFile(file.File);
+                if (isDir)
+                {
+                    client.DeleteDirectory(file.File);
+                }
+                else if (isFile)
+                {
+                    client.DeleteFile(file.File);
+                }
+                else
+                {
+                    Console.WriteLine("ERROR: The specified file/directory does not exist\n");
+                }
+
+                return 0;
             }
             else
             {
-                Console.WriteLine("The specified file/directory does not exist.");
+                Console.WriteLine("ERROR: Not connected to remote server!\n");
+                return -1;
             }
-
-            return 0;
         }
 
         public static int Permissions(ref FtpClient client, Commands.Permissions file)
