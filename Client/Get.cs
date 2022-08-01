@@ -14,7 +14,7 @@ namespace Client
                 return -1;
             }
 
-            Console.WriteLine("Downloading File: " + files.Path);
+            Console.WriteLine("\nDownloading File: " + files.Path);
 
             if (files.Files.Count() > 1)
                 return MultipleFiles(files.Files);
