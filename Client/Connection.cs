@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Security.Cryptography;
 using FluentFTP;
 
 namespace Client
@@ -8,29 +8,78 @@ namespace Client
         public static int Connect(ref FtpClient client, Commands.Connect commands)
         {
             client.Host = commands.IP;
-            Console.Write("Enter the username: ");
-            client.Credentials.UserName = Console.ReadLine();
-            Console.Write("Enter the password: ");
-            client.Credentials.Password = Console.ReadLine();
+            bool firstAuth = false;
 
-            try
+            if (File.Exists(commands.IP + ".txt"))
             {
-                client.AutoConnect();
+                try
+                {
+                    string? credFile = commands.IP + ".txt";
+                    File.Decrypt(credFile);
+                    using (StreamReader Reader = new StreamReader(credFile))
+                    {
+                        client.Credentials.UserName = Reader.ReadLine();
+                        client.Credentials.Password = Reader.ReadLine();
+                        client.AutoConnect();
+                    };
+                    File.Encrypt(credFile);
+                }
+                catch(Exception x)
+                { 
+                    Console.WriteLine(x.ToString()); 
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine(ex.ToString());
+                Console.Write("Enter the username: ");
+                client.Credentials.UserName = Console.ReadLine();
+                Console.Write("Enter the password: ");
+                client.Credentials.Password = Console.ReadLine();
+
+                try
+                {
+                    client.AutoConnect();
+                    firstAuth = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
             }
 
             if (client.IsAuthenticated)
+            {
+                if (firstAuth)
+                {
+                    Console.WriteLine("Would you like to save your login credentials? (Y/N): ");
+                    string? input = Console.ReadLine();
+                    if (input == "y" || input == "Y")
+                        Save(ref client);
+                }
                 return 0;
+            }
             else
                 return -1;
         }
 
         public static int Save(ref FtpClient client)
         {
-            return 0;
+            string? credsFile = client.Host + ".txt";
+            try
+            {
+                StreamWriter credentials = new StreamWriter(credsFile);
+                credentials.WriteLine(client.Credentials.UserName);
+                credentials.WriteLine(client.Credentials.Password);
+                credentials.Close();
+                File.Encrypt(credsFile);
+                return 0;
+            }
+            catch(Exception x)
+            {
+                File.Delete(credsFile);
+                Console.WriteLine(x.ToString());
+                return -1;
+            }
         }
 
         public static void Timeout(ref FtpClient client)
