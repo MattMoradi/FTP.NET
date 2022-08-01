@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentFTP;
+using ShellProgressBar;
 
 namespace Client
 {
@@ -7,10 +8,46 @@ namespace Client
     {
         public static int File(ref FtpClient client, Commands.Get files)
         {
-            Console.WriteLine("file: " + files.File);
+            if (!client.IsAuthenticated)
+            {
+                Console.WriteLine("ERROR: No connection to remote server!");
+                return -1;
+            }
+
+            Console.WriteLine("\nDownloading File: " + files.Path);
 
             if (files.Files.Count() > 1)
                 return MultipleFiles(files.Files);
+
+            var options = new ProgressBarOptions
+            {
+                ForegroundColor = ConsoleColor.Yellow,
+                ForegroundColorDone = ConsoleColor.DarkGreen,
+                BackgroundColor = ConsoleColor.DarkGray,
+                BackgroundCharacter = '\u2593'
+            };
+
+            using var progressBar = new ProgressBar(10000, "downloaded", options);
+
+            Action<FtpProgress> progress = delegate (FtpProgress download)
+            {
+                    var progress = progressBar.AsProgress<double>();
+                    progress.Report(download.Progress / 100);
+            };
+
+            try
+            {
+                string fileName = files.Path.Substring(files.Path.LastIndexOf('/') + 1);
+
+                if (files.Path != null)
+                    client.DownloadFile(fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
+                else
+                    Console.WriteLine("ERROR: File not specified!");
+            }
+            catch (Exception x)
+            {
+                Console.WriteLine(x.ToString());
+            }
             return 0;
         }
 
@@ -55,11 +92,11 @@ namespace Client
                     Console.WriteLine(j.Name);
                 }
             }
-            catch(DirectoryNotFoundException e)
+            catch (DirectoryNotFoundException e)
             {
                 Console.WriteLine("Directory not found");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
