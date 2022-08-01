@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentFTP;
+using ShellProgressBar;
 
 namespace Client
 {
@@ -13,21 +14,25 @@ namespace Client
                 return -1;
             }
 
-            Console.WriteLine("file: " + files.Path);
+            Console.WriteLine("Downloading File: " + files.Path);
 
             if (files.Files.Count() > 1)
                 return MultipleFiles(files.Files);
 
-            Action<FtpProgress> progress = delegate (FtpProgress p)
+            var options = new ProgressBarOptions
             {
-                if (p.Progress == 1)
-                {
-                    // all done!
-                }
-                else
-                {
-                    // percent done = (p.Progress * 100)
-                }
+                ForegroundColor = ConsoleColor.Yellow,
+                ForegroundColorDone = ConsoleColor.DarkGreen,
+                BackgroundColor = ConsoleColor.DarkGray,
+                BackgroundCharacter = '\u2593'
+            };
+
+            using var progressBar = new ProgressBar(10000, "downloaded", options);
+
+            Action<FtpProgress> progress = delegate (FtpProgress download)
+            {
+                    var progress = progressBar.AsProgress<double>();
+                    progress.Report(download.Progress / 100);
             };
 
             try
@@ -87,11 +92,11 @@ namespace Client
                     Console.WriteLine(j.Name);
                 }
             }
-            catch(DirectoryNotFoundException e)
+            catch (DirectoryNotFoundException e)
             {
                 Console.WriteLine("Directory not found");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
