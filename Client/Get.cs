@@ -21,84 +21,108 @@ namespace Client
             return 0;
         }
 
+        //Wrapper to check which directory should be displayed to the console
         public static int List(ref FtpClient client, Commands.List directory, in Program.FilePath path, in string[] args)
         {
-            if (args.Contains("-r"))
-            {
-                try
-                {
-                    Console.WriteLine(path.Remote);
-                    FtpListItem[] items = client.GetListing(path.Remote);
-
-                    foreach (FtpListItem item in items)
-                    {
-                        if(client.DirectoryExists(path.Remote + item.Name))
-                            Console.WriteLine(item.Name + "/");
-                        else 
-                            Console.WriteLine(item.Name);
-                    }
-                        
-                    Console.WriteLine();
-                }
-                catch (Exception ex)
-                {
-                    if (ex.InnerException != null)
-                        Console.WriteLine(ex.InnerException.Message);
-                    else
-                        Console.WriteLine(ex.Message);
-                    return -1;
-                }
-                return 0;
-            }
-
-            else if (args.Contains("-l"))//i'll let Peter configure this part for his section
-            {
-                Console.WriteLine();
-                //string filePath = "/";
-                try
-                {
-                    //I don't think this part is needed anymore
-                    /*
-                    if (directory.Local != null)
-                    {
-                        filePath = Path.GetFullPath(directory.Local);
-                    }
-                    else if (directory.Remote != null)
-                    {
-                        throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
-                    }*/
-
-                    DirectoryInfo dir = new DirectoryInfo(path.Local);
-                    DirectoryInfo[] sub_directories = dir.GetDirectories();
-                    FileInfo[] files = dir.GetFiles();
-
-                    // List sub-directories
-                    foreach (DirectoryInfo i in sub_directories)
-                    {
-                        Console.WriteLine("{0}/", i.Name);
-                    }
-
-                    if (sub_directories.Length > 0)
-                        Console.WriteLine();
-
-                    // List files
-                    foreach (FileInfo j in files)
-                    {
-                        Console.WriteLine(j.Name);
-                    }
-                }
-                catch (DirectoryNotFoundException e)
-                {
-                    Console.WriteLine("Directory not found");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
-                Console.WriteLine();
-                return 0;
+            if (args.Contains("-l"))//i'll let Peter configure this part for his section
+                return ListLocalDirectory(in path);
+            else
+                return ListRemoteDirectory(ref client, in path, in args);  
         }
+
+        //Lists the current directory the user is in on the remote server
+        private static int ListRemoteDirectory(ref FtpClient client, in Program.FilePath path, in string[] args)
+        {
+            if (!client.IsAuthenticated)
+            {
+                Console.WriteLine("Must be connected to a remote server to display directory!");
+                return -1;
+            }
+           
+            try
+            {
+                string displayPath = path.Remote;
+                int index = Array.IndexOf(args, "ls");
+
+                //check if there is a 3rd argument provided.
+                //It should be the directory the user wants to display
+                if (index + 3 <= args.Length)
+                    displayPath += args[2];
+               
+                FtpListItem[] items = client.GetListing(displayPath);
+                Console.WriteLine(displayPath);
+
+                foreach (FtpListItem item in items)
+                {
+                    if (item.Type == FtpFileSystemObjectType.Directory)
+                        Console.WriteLine(item.Name + "/");
+                    else
+                        Console.WriteLine(item.Name);
+                }
+
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
+                else
+                    Console.WriteLine(ex.Message);
+                return -1;
+            }
+            return 0;
+        }
+
+        //Lists the current directory the user is in on their local machine
+        private static int ListLocalDirectory(in Program.FilePath path)
+        {
+            Console.WriteLine();
+            //string filePath = "/";
+            try
+            {
+                //I don't think this part is needed anymore
+                /*
+                if (directory.Local != null)
+                {
+                    filePath = Path.GetFullPath(directory.Local);
+                }
+                else if (directory.Remote != null)
+                {
+                    throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
+                }*/
+
+                DirectoryInfo dir = new DirectoryInfo(path.Local);
+                DirectoryInfo[] sub_directories = dir.GetDirectories();
+                FileInfo[] files = dir.GetFiles();
+
+                // List sub-directories
+                foreach (DirectoryInfo i in sub_directories)
+                {
+                    Console.WriteLine("{0}/", i.Name);
+                }
+
+                if (sub_directories.Length > 0)
+                    Console.WriteLine();
+
+                // List files
+                foreach (FileInfo j in files)
+                {
+                    Console.WriteLine(j.Name);
+                }
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                Console.WriteLine("Directory not found");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
+        Console.WriteLine();
+        return 0;
+    }
+
         public static int ChangeDirectory(in FtpClient client, ref Program.FilePath path, in string[] args)
         {
             bool isRemote = args.Contains("-r");
@@ -106,13 +130,13 @@ namespace Client
 
             if (!client.IsConnected && isRemote)
             {
-                Console.WriteLine("ERROR: must be connected to a server to change directory!\n");
+                Console.WriteLine("Must be connected to a server to change remote directory!\n");
                 return -1;
             }
 
             if (!isRemote && !isLocal)
             {
-                Console.WriteLine("ERROR: must specify local or remote directory!\n");
+                Console.WriteLine("Must specify local or remote directory!\n");
                 return -1;
             }
            
@@ -122,17 +146,17 @@ namespace Client
                 int index = Array.IndexOf(args, "cd");
                 string tempPath;
 
-                if (index + 1 < args.Length && args[index + 1] == "..")
+                if (args[index + 2] == "..")
                     return GoToPrevDirectory(ref path, in args);
                
                 if (isRemote)
                 {
-                     tempPath = path.Remote + args[index + 1] + "/";
+                     tempPath = path.Remote + args[index + 2] + "/";
 
                     //check if user entered a valid directory to change to
                     if (!client.DirectoryExists(tempPath))
                     {
-                        Console.WriteLine("ERROR: No such directory exists!\n");
+                        Console.WriteLine("No such directory exists!\n");
                         return -1;
                     }
                     else
@@ -145,10 +169,10 @@ namespace Client
 
                 if (isLocal)
                 {
-                    tempPath = path.Local + args[index + 1] + "/";
+                    tempPath = path.Local + args[index + 2] + "/";
                     if (!Directory.Exists(tempPath))
                     {
-                        Console.WriteLine("ERROR: No such directory exists!\n");
+                        Console.WriteLine("No such directory exists!\n");
                         return -1;
                     }
                     else
@@ -161,16 +185,24 @@ namespace Client
                 return 0;
                 
             }
+            catch(IndexOutOfRangeException)
+            {
+                Console.WriteLine("Must provide a directory to change to!\n");
+            }
             catch(Exception ex)
             {
                 if (ex.InnerException != null)
                     Console.WriteLine(ex.InnerException.Message);
                 else
                     Console.WriteLine(ex.Message);
-                return -1;
             }
+            return -1;
         }
 
+        private static bool ChangeLocalDirectory()
+        {
+            return false;
+        }
         //check if current path is at root by counting number of '/'
         //characters that occur in the path string
         private static bool IsAtRootDirectory(in string path)
