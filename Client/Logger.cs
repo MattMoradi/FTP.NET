@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Client
 {
-    public class Logger
+    public class Logger : ILogger
     {
         private string mFilePath;
 
@@ -14,14 +14,14 @@ namespace Client
         {
             mFilePath = CreateDirectory(name);
         }
-
+        /*
         //log what the user typed and append that information to their log
         public void Log(string message)
         {
             StreamWriter streamWriter = File.AppendText(mFilePath + ".txt");
             streamWriter.WriteLine(message + "\t" + DateTime.Now);
             streamWriter.Close();
-        }
+        }*/
         public void Log(string[] message)
         {
             StreamWriter streamWriter = File.AppendText(mFilePath + ".txt");
@@ -31,10 +31,9 @@ namespace Client
             streamWriter.Close();
         }
 
-
         //Creates new directory to store log information
         //Directory is located: ftp/Client/bin/Debug/net6.0/Users
-        private string CreateDirectory(string name)
+        public string CreateDirectory(string name)
         {
             try
             {
