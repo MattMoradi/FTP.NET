@@ -29,7 +29,7 @@ namespace Client
                 if (client.DirectoryExists(directory.Name))
                     Console.WriteLine("ERROR: Directory already exists\n");
                 else
-                    client.CreateDirectoryAsync(directory.Name);
+                    client.CreateDirectory(directory.Name);
 
                 return 0;
             }
@@ -83,7 +83,8 @@ namespace Client
                     response = "No";
                 }
 
-                if ((String.Equals(response, "Y") || (String.Equals(response, "Yes") || (String.Equals(response, "YES")){
+                if ((String.Equals(response, "Y")) || (String.Equals(response, "Yes")) || (String.Equals(response, "YES")))
+                {
                     client.DeleteDirectory(file.Directories.Last());
                 }
                 else
@@ -94,10 +95,25 @@ namespace Client
             }
             //ALL CHECKS SHOULD BE PERFORMED AT THIS POINT SO OK TO GO FORWARD WITH THE DL/UL/DEL
 
-            string localtempdir = "C:\\fluentftp_tempdir_" + sourcedir;
+            string localtempdir = "C:\\fluentftp_tempdir";
 
             client.DownloadDirectory(localtempdir, sourcedir, FtpFolderSyncMode.Update);
-            client.UploadDirectory(localtempdir, targetdir, FtpFolderSyncMode.Update);
+
+            string[] dirs = Directory.GetDirectories(localtempdir);
+
+            client.CreateDirectory(targetdir);
+
+            foreach (string dir in dirs)
+            {
+                client.UploadDirectory(dir, targetdir, FtpFolderSyncMode.Update);
+            }
+
+            string[] files = Directory.GetFiles(localtempdir);
+
+            foreach (string f in files)
+            {
+                client.UploadFile(f, targetdir);
+            }
 
             Directory.Delete(localtempdir, true);
 
