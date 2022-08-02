@@ -23,7 +23,20 @@ namespace Client
 
         public static int Create(ref FtpClient client, Commands.CreateDirectory directory)
         {
-            return 0;
+            if (client.IsAuthenticated)
+            {
+                if (client.DirectoryExists(directory.Name))
+                    Console.WriteLine("ERROR: Directory already exists\n");
+                else
+                    client.CreateDirectoryAsync(directory.Name);
+
+                return 0;
+            }
+            else
+            {
+                Console.WriteLine("ERROR: Not connected to remote server!\n");
+                return -1;
+            }
         }
 
         public static int Copy(ref FtpClient client, Commands.Copy file)

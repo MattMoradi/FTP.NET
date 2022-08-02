@@ -11,7 +11,7 @@ namespace Client
             public string IP { get; set; }
         }
 
-        [Verb("ls", HelpText = "Disconnect from the remote server")]
+        [Verb("ls", HelpText = "List directories and files")]
         public class List
         {
             // this is just one way of separating between remote and local. could also be path based instead
@@ -27,7 +27,7 @@ namespace Client
         public class Get
         {
             [Value(0, MetaName = "file", HelpText = "File to get from remote server")]
-            public string? File { get; set; }
+            public string? Path { get; set; }
 
             [Option('l', "local Path", HelpText = "Local file path to save files.")]
             public string LocalPath { get; set; } = string.Empty;
