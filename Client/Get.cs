@@ -51,7 +51,14 @@ namespace Client
                 else if(index + 2 == args.Length && args[1] != "-r")//passes when the user does not provide -r flag
                     displayPath +=args[1];
                
+                
+                if(!client.DirectoryExists(displayPath))
+                {
+                    Console.WriteLine("No such directory exists!\n");
+                    return -1;
+                }
                 FtpListItem[] items = client.GetListing(displayPath);
+                
                 Console.WriteLine(displayPath);
 
                 foreach (FtpListItem item in items)
