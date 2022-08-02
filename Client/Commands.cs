@@ -8,7 +8,7 @@ namespace Client
         public class Connect
         {
             [Value(0, MetaName = "ip", HelpText = "Remote server IP address")]
-            public string IP { get; set; }
+            public string? IP { get; set; }
         }
 
         [Verb("ls", HelpText = "List directories and files")]
@@ -53,7 +53,7 @@ namespace Client
         public class CreateDirectory
         {
             [Value(0, MetaName = "file", HelpText = "Name of directory to create")]
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         [Verb("rm", HelpText = "Remove file from remote server")]
@@ -85,12 +85,22 @@ namespace Client
         public class Rename
         {
             [Value(0, MetaName = "default", HelpText = "File to rename on remote server (default)")]
-            public string Name { get; set; }
+            public string? Name { get; set; }
 
             [Option('l', "local", Required = false, HelpText = "Rename file on local machine")]
             public string? Local { get; set; }
 
             [Option('r', "remote", Required = false, HelpText = "Rename file on remote server")]
+            public string? Remote { get; set; }
+        }
+
+        [Verb("cd", HelpText = "Change current directory on local machine or remote server")]
+        public class ChangeDirectory
+        {
+            [Value(0, MetaName = "cd", Required = false, HelpText = "Change current directory on local machine or remote server")]
+            [Option('l', "local", Required = false, HelpText = "Change current local directory")]
+            public string? Local { get; set; }
+            [Option('r', "remote", Required = false, HelpText = "Change current remote directory")]
             public string? Remote { get; set; }
         }
     }
