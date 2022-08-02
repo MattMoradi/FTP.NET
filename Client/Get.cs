@@ -18,7 +18,7 @@ namespace Client
             Console.WriteLine("\nDownloading File: " + files.Path);
 
             if (files.Files.Count() > 1)
-                return MultipleFiles(files.Files);
+                return MultipleFiles(client, files.Files, files.LocalPath);
             else if (!string.IsNullOrEmpty(files.Directory))
             {
                 return Directory(client, files.Directory, files.LocalPath);
