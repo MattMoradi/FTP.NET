@@ -14,11 +14,33 @@ namespace Client
                 return -1;
             }
 
+            string password = String.Empty;
+            ConsoleKey key;
             client.Host = commands.IP;
+
             Console.Write("Enter the username: ");
             client.Credentials.UserName = Console.ReadLine();
             Console.Write("Enter the password: ");
-            client.Credentials.Password = Console.ReadLine();
+
+            do
+            {
+                ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+                key = keyInfo.Key;
+
+                if (key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    Console.Write("\b \b");
+                    password = password[0..^1];
+                }
+                else if (!char.IsControl(keyInfo.KeyChar))
+                {
+                    Console.Write("*");
+                    password += keyInfo.KeyChar;
+                }
+            } while (key != ConsoleKey.Enter);
+
+            client.Credentials.Password = password;
+            Console.WriteLine();
 
             try
             {
