@@ -87,7 +87,7 @@ namespace Client
                 // Check for incorrect file names
                 remoteDirs.ToList().ForEach(rd =>
                 {
-                    if (!rd.Contains('.') && !rd.Last().Equals('.'))
+                    if (!rd.Contains('.') || !rd.Last().Equals('.'))
                     {
                         Console.WriteLine($"Incorrect File Name: {rd}, Missing File Extension");
                         ++badFleNmeCount;
