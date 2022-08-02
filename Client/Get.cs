@@ -15,7 +15,8 @@ namespace Client
                 return -1;
             }
 
-            Console.WriteLine("\nDownloading File: " + files.Path);
+            if (!string.IsNullOrEmpty(files.Path))
+                Console.WriteLine("\nDownloading File: " + files.Path);
 
             if (files.Files.Count() > 1)
                 return MultipleFiles(client, files.Files, files.LocalPath);
@@ -68,11 +69,48 @@ namespace Client
         {
             try
             {
+                var badFleNmeCount = 0;
+                // Check for no Client connection
+                if (!ftpClient.IsAuthenticated)
+                {
+                    Console.WriteLine("Error Host Not Specified. Try \"Connect\" Command");
+                    return -1;
+                }
+
+                // Verify local directory is a directory
+                if (!string.IsNullOrEmpty(localDir) && localDir.Contains('.'))
+                {
+                    Console.WriteLine("local directory must be a directory not a file path. Try Again");
+                    return -1;
+                }
+
+                // Check for incorrect file names
+                remoteDirs.ToList().ForEach(rd =>
+                {
+                    if (!rd.Contains('.') && !rd.Last().Equals('.'))
+                    {
+                        Console.WriteLine($"Incorrect File Name: {rd}, Missing File Extension");
+                        ++badFleNmeCount;
+                    }
+                });
+
+                // if all file names are bad display error and return
+                if (badFleNmeCount == remoteDirs.Count())
+                {
+                    Console.WriteLine("Incorrect Remote File Names. Try again.");
+                    return -1;
+                }
+
+                Console.WriteLine("Downloading Files...\n");
+
                 // check if local was provided or not. if not use default.
                 localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
                 
                 // executes download of remoteDirectories to the local location.
                 var result = ftpClient.DownloadFiles(localDir, remoteDirs);
+
+                if ((result + badFleNmeCount) - remoteDirs.Count() == 0)
+                    Console.WriteLine($"{result.ToString()} File(s) Downloaded. {badFleNmeCount} File(s) Failed for incorrect file name.");
 
                 // let user know where files were downloaded incase local dir not provided
                 if (result > 0)
@@ -109,14 +147,39 @@ namespace Client
         {
             try
             {
+                if (!ftpClient.IsConnected)
+                {
+                    Console.WriteLine("FTP Host Not Specified, Try The \"Connect\" Command");
+                    return -1;
+                }
+
+                if (string.IsNullOrEmpty(remoteDir) || remoteDir.Contains('.'))
+                {
+                    Console.WriteLine($"Incorrect remote directory name value: {remoteDir}. Try again.");
+                    return - 1;
+                }
+
+                if (!string.IsNullOrEmpty(localDir) && localDir.Contains('.'))
+                {
+                    Console.WriteLine($"Incorrect local directory name: {localDir} try again.");
+                    return -1;
+                }
+
+                Console.WriteLine($"Downloading Directory: {remoteDir}...");
                 var result = 0;
 
+                // Use the user indicated directory or evironement directory if not specified
+                localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
+
                 // execute directory download
-                var dir = ftpClient.DownloadDirectory(string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir, remoteDir, FtpFolderSyncMode.Update);
+                var dir = ftpClient.DownloadDirectory(localDir, remoteDir, FtpFolderSyncMode.Update);
 
                 // determine how many files were downloaded ignoring the skipped and overwritten files.
                 dir.ForEach(d => { if (d.IsDownload) ++result; });
                 
+                if (result > 0)
+                    Console.WriteLine($"Directory downloaded to {localDir}.");
+
                 // return number of files downloaded successfully
                 return result;
             }

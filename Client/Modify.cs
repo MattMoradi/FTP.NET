@@ -47,6 +47,24 @@ namespace Client
             int result = -1;
             try
             {
+                if (!client.IsConnected)
+                {
+                    Console.WriteLine("Host not specified, Try the \"Connect\" command.");
+                    return -1;
+                }
+
+                if (string.IsNullOrEmpty(file.FilePath))
+                {
+                    Console.WriteLine("File path cannot be empty, enter a valid file name");
+                    return -1;
+                }
+
+                if (!file.FilePath.Contains('.') || file.FilePath.Last().Equals("."))
+                {
+                    Console.WriteLine($"Incorrect File Name: {file.FilePath}");
+                    return -1;
+                }
+
                 // Invoke library method to execute permission change.
                 client.SetFilePermissions(file.FilePath, ((file.Owner * 100) + (file.Group * 10) + file.Others));
                 
@@ -81,20 +99,42 @@ namespace Client
                 // Check if the file exists on the remote server.
                 if (!string.IsNullOrEmpty(file.RemoteName) && client.IsConnected)
                 {
-                    // rename remote file
-                    result = client.MoveFile(file.RemoteName, file.RenameValue) ? 0 : -1;
+                    if (file.RemoteName.Contains('.') && !file.RemoteName.Last().Equals('.'))
+                    {
+                        Console.WriteLine($"Executing Remote Rename Of: {file.RenameValue}...");
+                        // rename remote file
+                        result = client.MoveFile(file.RemoteName, file.RenameValue) ? 0 : -1;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Incorrect file name: {file.RemoteName}. Try again.");
+                        return -1;
+                    }
+                }
+                else if (string.IsNullOrEmpty(file.LocalName) && !client.IsConnected)
+                {
+                    Console.WriteLine("Host not specified. Try the \"Connect\" command.");
+                    return -1;
                 }
                 // check if local file exists with given name
                 else if (!string.IsNullOrEmpty(file.LocalName))
                 {
-                    Directory.Move(file.LocalName, file.RenameValue);
-                    result = 0;
+                    if (file.LocalName.Contains('.') && !file.LocalName.Last().Equals('.'))
+                    {
+                        // moves files and directories
+                        Directory.Move(file.LocalName, file.RenameValue);
+                        result = 0;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Incorrect file name: {file.LocalName}, try again");
+                        return -1;
+                    }
                 }
-
-                // prevents remote rename with forgottent client connection from being "silent"
-                if (!client.IsConnected && !string.IsNullOrEmpty(file.RemoteName))
+                else
                 {
-                    Console.WriteLine("Host Not Specified, Try the \"Connect\" Command.");
+                    Console.WriteLine("Error, No File Specified Try Again.");
+                    return -1;
                 }
             }
             catch(ArgumentException aExc)
