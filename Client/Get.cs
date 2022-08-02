@@ -24,8 +24,8 @@ namespace Client
         //Wrapper to check which directory should be displayed to the console
         public static int List(ref FtpClient client, Commands.List directory, in Program.FilePath path, in string[] args)
         {
-            if ((!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
-                return ListLocalDirectory(in path);
+            if ((!args.Contains("-r")) && (!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
+                return ListLocalDirectory(in path);//ill let peter configure this part
             else
                 return ListRemoteDirectory(ref client, in path, in args);  
         }
@@ -133,7 +133,7 @@ namespace Client
 
                 if (args.Contains(".."))
                     return GoToPrevDirectory(ref path, in args, in client);
-                if ((!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
+                if ((!args.Contains("-r")) && (!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
                     return ChangeLocalDirectory(client, ref path, in args, index);
                 else
                     return ChangeRemoteDirectory(client, ref path, in args, index);
@@ -154,7 +154,7 @@ namespace Client
         {
             try
             {
-                if ((!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
+                if ((!args.Contains("-r")) && (!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
                 {
                     if (IsAtRootDirectory(path.Local))
                         return -1;
