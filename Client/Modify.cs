@@ -97,7 +97,7 @@ namespace Client
             try
             {
                 // Check if the file exists on the remote server.
-                if (!string.IsNullOrEmpty(file.RemoteName) && client.IsConnected)
+                if (!string.IsNullOrEmpty(file.RemoteName) && client.IsConnected && file.RenameValue.Contains('.'))
                 {
                     if (file.RemoteName.Contains('.') && !file.RemoteName.Last().Equals('.'))
                     {
@@ -119,6 +119,11 @@ namespace Client
                 // check if local file exists with given name
                 else if (!string.IsNullOrEmpty(file.LocalName))
                 {
+                    if (!file.RenameValue.Contains('.') || file.RenameValue.Last().Equals('.'))
+                    {
+                        Console.WriteLine($"Incorrect Rename Value {file.RenameValue}. Missing file extension.");
+                        return -1;
+                    }
                     if (file.LocalName.Contains('.') && !file.LocalName.Last().Equals('.'))
                     {
                         // moves files and directories
