@@ -8,7 +8,7 @@ namespace Client
         public class Connect
         {
             [Value(0, MetaName = "ip", HelpText = "Remote server IP address")]
-            public string IP { get; set; }
+            public string? IP { get; set; }
         }
 
         [Verb("ls", HelpText = "List directories and files")]
@@ -59,7 +59,7 @@ namespace Client
         public class CreateDirectory
         {
             [Value(0, MetaName = "file", HelpText = "Name of directory to create")]
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         [Verb("rm", HelpText = "Remove file from remote server")]
@@ -108,6 +108,16 @@ namespace Client
 
             [Option('r', "remote", Required = false, HelpText = "Remote File Name To Change. (Must Support CHMOD)")]
             public string? RemoteName { get; set; } = String.Empty;
+        }
+
+        [Verb("cd", HelpText = "Change current directory on local machine or remote server")]
+        public class ChangeDirectory
+        {
+            [Value(0, MetaName = "cd", Required = false, HelpText = "Change current directory on local machine or remote server")]
+            [Option('l', "local", Required = false, HelpText = "Change current local directory")]
+            public string? Local { get; set; }
+            [Option('r', "remote", Required = false, HelpText = "Change current remote directory")]
+            public string? Remote { get; set; }
         }
     }
 }
