@@ -22,7 +22,7 @@ namespace Client
                 return MultipleFiles(client, files.Files, files.LocalPath);
             else if (!string.IsNullOrEmpty(files.Directory))
             {
-                return Directory(client, files.Directory, files.LocalPath);
+                return RemoteDirectory(client, files.Directory, files.LocalPath);
             }
             
             var options = new ProgressBarOptions
@@ -143,7 +143,7 @@ namespace Client
         /// <param name="remoteDir">Remote directory to grab.</param>
         /// <param name="localDir">Local directory where items are saved.</param>
         /// <returns>Number of files downloaded from directory.</returns>
-        public static int Directory(FtpClient ftpClient, string remoteDir, string localDir = "")
+        public static int RemoteDirectory(FtpClient ftpClient, string remoteDir, string localDir = "")
         {
             try
             {
