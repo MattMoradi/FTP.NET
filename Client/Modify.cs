@@ -96,7 +96,7 @@ namespace Client
             int result = -1;
             try
             {
-                int cont = RenameChecks(file);
+                int cont = RenameChecks(file, client.IsAuthenticated ? true : false);
 
                 // RenameChecks method handles messages to screen and all incorrect arguments
                 // Also indicates local vs remote vs dual rename.
@@ -108,43 +108,43 @@ namespace Client
                     {
                         Console.WriteLine($"Executing Remote Rename Of: {file.RemoteName}...");
                         // rename remote file
-                        if (client.MoveFile(file.RemoteName, file.RenameValue))
+                        if (client.MoveFile(file.RemoteName, file.NewName))
                         {
                             Console.WriteLine("Remote Rename Successfull!");
                         }
                         else
                         {
-                            Console.WriteLine("Remote Rename, Server Failure");
+                            Console.WriteLine("Error: server failed to rename file.");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("Host not specified. Try the \"Connect\" command for remote rename");
+                        Console.WriteLine("Error: Host not specified. Try the \"Connect\" command for remote rename");
                     }
                 }
                 if (cont == 1 || cont == 99)
                 {
                     Console.WriteLine($"Executing Local Rename Of: {file.LocalName}...");
                     //Directory.Move is used for files
-                    Directory.Move(file.LocalName, file.RenameValue);
+                    Directory.Move(file.LocalName, file.NewName);
                     result = 0;
                 }
             }
             catch(ArgumentException aExc)
             {
-                Console.WriteLine($"Rename Failed, Incorrect Parameters: {aExc}");
+                Console.WriteLine($"Error: rename failed, incorrect parameters: {aExc}");
             }
             catch(DirectoryNotFoundException dnfExc)
             {
-                Console.WriteLine($"Directory Not Found. Auto Exception Message {dnfExc.Message}");
+                Console.WriteLine($"Error: directory not found. auto exception message: {dnfExc.Message}");
             }
             catch(UnauthorizedAccessException uaaExc)
             {
-                Console.WriteLine($"You Need More Permissions. Auto Exception Message {uaaExc.Message}");
+                Console.WriteLine($"Error: permission denied. auto exception message: {uaaExc.Message}");
             }
             catch(Exception exc)
             {
-                Console.WriteLine($"Failed to rename: {(string.IsNullOrEmpty(file.RemoteName) ? file.LocalName : file.RemoteName)}. Auto Exception Msg: {exc.Message}");
+                Console.WriteLine($"Error: failed to rename: {(string.IsNullOrEmpty(file.RemoteName) ? file.LocalName : file.RemoteName)}. Auto Exception Msg: {exc.Message}");
             }
 
             if (result == 0)
@@ -165,60 +165,89 @@ namespace Client
         /// <returns>0 if remote rename and remote arguments are correct, 1 if local rename and local arguments
         /// are correct. 99 if dual local and remote rename and arguments are correct. -1 if any needed arguments
         /// are incorrect and a rename cannot be performed.</returns>
-        private static int RenameChecks(Commands.Rename files)
+        private static int RenameChecks(Commands.Rename files, bool isClient)
         {
             // base case checks
-            if (string.IsNullOrEmpty(files.LocalName) && string.IsNullOrEmpty(files.RenameValue) && string.IsNullOrEmpty(files.RemoteName))
+            if (string.IsNullOrEmpty(files.LocalName) && string.IsNullOrEmpty(files.NewName) && string.IsNullOrEmpty(files.RemoteName) && string.IsNullOrEmpty(files.OldName))
             {
-                Console.WriteLine($"Error, missing parameters. Need a local OR remote file to rename AND the new file name");
-                Console.WriteLine(@"Expected: rename <rename\file\Path.ext> -l <local\file\path.ext> OR -r <remote\file\path.ext>");
+                Console.WriteLine($"Error: missing parameters. Need a local OR remote file to rename AND the new file name");
+                Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
                 return -1;
             }
-            if (string.IsNullOrEmpty(files.RenameValue))
+            if (string.IsNullOrEmpty(files.NewName))
             {
                 Console.WriteLine("Error, Need a rename value.");
-                Console.WriteLine(@"Expected: rename <rename\file\Path.ext> -l <local\file\path.ext> OR -r <remote\file\path.ext>");
+                Console.WriteLine(@"Expected: rename rename <path\to\file\oldname> <path\to\file\newname>");
                 return -1;
             }
-            if (string.IsNullOrEmpty(files.LocalName) && string.IsNullOrEmpty(files.RemoteName) && !string.IsNullOrEmpty(files.RenameValue))
+            if (string.IsNullOrEmpty(files.LocalName) && string.IsNullOrEmpty(files.RemoteName) && string.IsNullOrEmpty(files.OldName) && !string.IsNullOrEmpty(files.NewName))
             {
-                if (!CheckExtension(files.RenameValue, "AND"))
+                if (!CheckExtension(files.NewName, "AND"))
                 {
-                    Console.WriteLine($"Incorrect Rename Value: {files.RenameValue}. Missing Extension.");
+                    Console.WriteLine($"Error: Incorrect Rename Value: {files.NewName}. Missing Extension.");
                 }
 
-                Console.WriteLine($"local and/or remote file name missing");
-                Console.WriteLine(@"Expected: rename <rename\file\Path> -l <local\file\path> OR -r <remote\file\path>");
+                Console.WriteLine($"Error: local and/or remote file name missing");
+                Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
                 return -1;
+            }
 
+            // Look for no flag case
+            if (!string.IsNullOrEmpty(files.NewName) && !string.IsNullOrEmpty(files.OldName))
+            {
+                if (CheckExtension(files.NewName, "AND") && CheckExtension(files.OldName, "AND"))
+                {
+                    if (isClient)
+                    {
+                        files.RemoteName = files.OldName;
+                        return 0;
+                    }
+                    else
+                    {
+                        files.LocalName = files.OldName;
+                        return 1;
+                    }
+                }
+                else
+                {
+                    if (CheckExtension(files.NewName, "OR"))
+                    {
+                        Console.WriteLine($"Error: Incorrect New File Name: {files.NewName}");
+                    }
+                    if (CheckExtension(files.OldName, "OR"))
+                    {
+                        Console.WriteLine($"Error: Incorrect Old File Name: {files.NewName}");
+                    }
+                    return -1;
+                }
             }
 
             // check for remote rename case and proper arguments
-            if (string.IsNullOrEmpty(files.LocalName) && !string.IsNullOrEmpty(files.RemoteName) && !string.IsNullOrEmpty(files.RenameValue))
+            if (string.IsNullOrEmpty(files.LocalName) && !string.IsNullOrEmpty(files.RemoteName) && !string.IsNullOrEmpty(files.NewName))
             {
-                if (CheckExtension(files.RemoteName, "AND") && CheckExtension(files.RenameValue, "AND"))
+                if (CheckExtension(files.RemoteName, "AND") && CheckExtension(files.NewName, "AND"))
                 {
                     // Indicates remote rename.
                     return 0;
                 }
                 else if (CheckExtension(files.RemoteName, "OR")) 
                 {
-                    Console.WriteLine($"Incorrect Remote File Name: {files.RemoteName}, Missing Extension");
-                    Console.WriteLine(@"Example: rename SampleRemoteFlder1\NewFileName.ext -r \SampleRemoteFolder2\OldFileName.ext");
+                    Console.WriteLine($"Error: Incorrect Remote File Name: {files.RemoteName}, Missing Extension");
+                    Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
                     return -1;
                 }
-                else if (CheckExtension(files.RenameValue, "OR"))
+                else if (CheckExtension(files.NewName, "OR"))
                 {
-                    Console.WriteLine($"Incorrect RenameValue: {files.RenameValue}, Missing extension.");
-                    Console.WriteLine(@"Example: rename C:\SampleFlder\NewFileName.ext --local \C:\SampleFolder\OldFileName.ext");
+                    Console.WriteLine($"Error: Incorrect RenameValue: {files.NewName}, Missing extension.");
+                    Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
 
                     return -1;
                 }
             }
             //Checks for local rename case and proper arguments
-            else if (string.IsNullOrEmpty(files.RemoteName) && !string.IsNullOrEmpty(files.RenameValue) && !string.IsNullOrEmpty(files.LocalName))
+            else if (string.IsNullOrEmpty(files.RemoteName) && !string.IsNullOrEmpty(files.NewName) && !string.IsNullOrEmpty(files.LocalName))
             {
-                if (CheckExtension(files.LocalName, "AND") && CheckExtension(files.RenameValue, "AND"))
+                if (CheckExtension(files.LocalName, "AND") && CheckExtension(files.NewName, "AND"))
                 {
                     // local rename case
                     return 1;
@@ -226,57 +255,58 @@ namespace Client
                 else if (CheckExtension(files.LocalName, "OR"))
                 {
                     Console.WriteLine($"Invalid Local File Name: {files.LocalName}. Incorrect Extension.");
-                    Console.WriteLine(@"Example: rename C:\SampleFlder\NewFileName.ext -l \C:\SampleFolder\OldFileName.ext");
+                    Console.WriteLine(@"Example: rename <path\to\file\oldname> <path\to\file\newname>");
                     return -1;
                 }
-                else if (CheckExtension(files.RenameValue, "OR"))
+                else if (CheckExtension(files.NewName, "OR"))
                 {
-                    Console.WriteLine($"Incorrect Rename Value: {files.RenameValue}. Incorrect Extension.");
-                    Console.WriteLine(@"Example: rename C:\SampleFlder\NewFileName.ext --local \C:\SampleFolder\OldFileName.ext");
+                    Console.WriteLine($"Incorrect Rename Value: {files.NewName}. Incorrect Extension.");
+                    Console.WriteLine(@"Example: rename <path\to\file\oldname> <path\to\file\newname>");
                     return -1;
                 }
             }
             //Check for dual rename case and proper arguments
-            else if (!string.IsNullOrEmpty(files.RemoteName) && !string.IsNullOrEmpty(files.RenameValue) && !string.IsNullOrEmpty(files.LocalName))
+            else if (!string.IsNullOrEmpty(files.RemoteName) && !string.IsNullOrEmpty(files.NewName) && !string.IsNullOrEmpty(files.LocalName))
             {
-                if (CheckExtension(files.LocalName, "AND") && CheckExtension(files.RenameValue, "AND") && CheckExtension(files.RemoteName, "AND"))
+                if (CheckExtension(files.LocalName, "AND") && CheckExtension(files.NewName, "AND") && CheckExtension(files.RemoteName, "AND"))
                 {
                     // local rename case
                     return 99;
                 }
                 else if (CheckExtension(files.LocalName, "OR"))
                 {
-                    Console.WriteLine($"Invalid Local File Name: {files.LocalName}. Incorrect Extension.");
-                    Console.WriteLine(@"Example: rename C:\SampleFlder\NewFileName.ext -l \C:\SampleFolder\OldFileName.ext");
+                    Console.WriteLine($"Error: Invalid Local File Name: {files.LocalName}. Incorrect Extension.");
+                    Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
                     return -1;
                 }
-                else if (CheckExtension(files.RenameValue, "OR"))
+                else if (CheckExtension(files.NewName, "OR"))
                 {
-                    Console.WriteLine($"Incorrect Rename Value: {files.RenameValue}. Incorrect Extension.");
-                    Console.WriteLine(@"Example: rename \SampleRemoteFlder\NewRemoteName.ext -r \SampleRemoteFolder\OldRemoteName.ext");
+                    Console.WriteLine($"Error: Incorrect Rename Value: {files.NewName}. Incorrect Extension.");
+                    Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
                     return -1;
                 }
                 else if (CheckExtension(files.RemoteName, "OR"))
                 {
-                    Console.WriteLine($"Incorrect Remote Value: {files.RemoteName}. Incorrect Extension.");
-                    Console.WriteLine(@"Example: rename \SampleRemoteFlder\NewRemoteName.ext --remote \SampleRemoteFolder\OldRemoteName.ext");
+                    Console.WriteLine($"Error: Incorrect Remote Value: {files.RemoteName}. Incorrect Extension.");
+                    Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
                     return -1;
                 }
             }
 
-            Console.WriteLine("Rename Failed. Unexpected Error Try Again...");
+            Console.WriteLine("Error: Rename Failed. Unexpected Error Try Again...");
+            Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
             return -1;
         }
 
         /// <summary>
         /// Checks for a file extension on the file name. Two cases: using "AND" as type will indicate if
-        /// the value passed in has a valid extension. Using "OR" as type will indicate if the file name
+        /// the value passed and has a valid extension. Using "OR" as type will indicate if the file name
         /// fails any incorrect file case.
         /// </summary>
         /// <param name="val">string value to check</param>
-        /// <param name="type">"AND" Atomic pass or fail, "OR" variable fail</param>
-        /// <returns>true if file extension is correct on "AND" and "OR" case. false if file name fails one test 
-        /// on "AND" or any test on "OR".</returns>
+        /// <param name="type">"AND" Indicates correct file name on true, "OR" Indicates incorrect file path on true</param>
+        /// <returns>True if "AND" type is used and the file name is valid, False if "AND" type is used and file name is invalid
+        ///          True if "OR" type is used and the file name is invalid, False if "OR" type is used and file name is valid</returns>
         private static bool CheckExtension(string val, string type)
         {
             return type == "AND" ? (val.Contains(".") && !val.Last().Equals('.')) : (!val.Contains(".") || val.Last().Equals('.'));
