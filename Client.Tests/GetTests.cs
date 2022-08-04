@@ -109,7 +109,7 @@ namespace Client.Tests
         public void Get_Change_Remote_Directory_Success()
         {
             FtpClient client = new("ftp.drivehq.com", "agiletesting", "unittest");
-            Assert.True(client.IsAuthenticated);
+            client.Connect();
             Program.FilePath path = new();
             path.SetInitalPaths("./", "/");
             int index = 0;
