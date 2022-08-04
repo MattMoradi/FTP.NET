@@ -54,7 +54,7 @@ namespace Client
                     Commands.Put, Commands.CreateDirectory, Commands.Delete, Commands.Permissions, Commands.Copy, Commands.Save,
                     Commands.ChangeDirectory, Commands.Rename>(args).MapResult(
                 (Commands.Connect opts) => Connection.Connect(ref client, ref logger, opts, ref path),
-                (Commands.List opts) => Get.List(ref client, opts, in path, args),
+                (Commands.List opts) => Get.List(ref client, in path, args),
                 (Commands.Get opts) => Get.File(ref client, opts),
                 (Commands.Disconnect opts) => Connection.Disconnect(ref client, ref logger),
                 (Commands.Quit opts) => Connection.Exit(),

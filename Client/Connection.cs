@@ -68,7 +68,7 @@ namespace Client
                 return -1;
             }
         }
-
+     
         public static int Save(ref FtpClient client)
         {
             return 0;
