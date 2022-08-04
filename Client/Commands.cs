@@ -101,11 +101,13 @@ namespace Client
         public class Rename
         {
 
+            
             [Value(0, MetaName = "Old File Name", HelpText = "The name of the file that needs a rename.")]
             public string OldName { get; set; } = String.Empty;
             
             [Value(1, MetaName = "New File Name", HelpText = "The new name of the file after the operations")]
             public string NewName { get; set; } = String.Empty;
+            
 
             [Option('l', "local", Required = false, HelpText = "Local File Name To Change")]
             public string LocalName { get; set; } = String.Empty;
