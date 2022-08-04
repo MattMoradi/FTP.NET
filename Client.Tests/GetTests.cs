@@ -10,9 +10,7 @@ namespace Client.Tests
         [Fact]
         public void Get_List_Remote_Directory_Success()
         {
-            //FtpClient client = new ("ftp.drivehq.com", "unfinishedideas", "agile123!");
             FtpClient client = new("ftp.drivehq.com", "agiletesting", "unittest");
-            //FtpClient client = new("127.0.0.1", "carson", "carson");
             client.Connect();
             Assert.True(client.IsAuthenticated,"The client was not authenticated!");
             client.Disconnect();
@@ -32,8 +30,6 @@ namespace Client.Tests
         public void Get_List_Remote_Directory_Client_Is_Authenticated()
         {
             FtpClient client = new("ftp.drivehq.com", "agiletesting", "unittest");
-            //FtpClient client = new ("ftp.drivehq.com", "unfinishedideas", "agile123!");
-            // FtpClient client = new("127.0.0.1", "carson", "carson");
             client.Connect();
             string[] args = { "ls", "-r" };
             Program.FilePath path = new();
