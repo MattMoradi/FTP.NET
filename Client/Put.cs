@@ -45,6 +45,12 @@ namespace Client
             string sourcedir;
             string targetdir;
 
+            if (!client.IsAuthenticated)
+            {
+                Console.WriteLine("ERROR: Not connected to remote server!\n");
+                return -1;
+            }
+
             //Check whether there are two arguments, if there are not, return error message
             if (file.Directories.Count() != 2)
             {
@@ -74,7 +80,7 @@ namespace Client
             //Check whether the destination dir exists. If it does ask whether they would like to delete the contents and replace w/ the source dir and it's contents
             if (client.DirectoryExists(file.Directories.Last()))
             {
-                Console.WriteLine("The destination directory already exists. Would you like to overwrite it? (Y/Yes)");
+                Console.WriteLine("The destination directory already exists. Would you like to overwrite it? (Y/N)");
 
                 var response = Console.ReadLine();
 
@@ -83,7 +89,7 @@ namespace Client
                     response = "No";
                 }
 
-                if ((String.Equals(response, "Y")) || (String.Equals(response, "Yes")) || (String.Equals(response, "YES")))
+                if ((String.Equals(response, "y")) || (String.Equals(response, "Y")) || (String.Equals(response, "Yes")) || (String.Equals(response, "YES"))  ||  (String.Equals(response, "yes")))
                 {
                     client.DeleteDirectory(file.Directories.Last());
                 }
