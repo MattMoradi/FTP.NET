@@ -14,6 +14,36 @@ namespace Client
                 return -1;
             }
 
+            try
+            {
+                GetUserCredentials(ref client, commands);
+                client.Connect();
+                path.ResetPaths();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
+                else
+                    Console.WriteLine(ex.Message);
+                return -1;
+            }
+
+            if (client.IsAuthenticated)
+            {
+                logger = new Logger(client.Credentials.UserName);
+                Console.WriteLine("Successfully connected to server!");
+                return 0;
+            }
+            else
+            {
+                Console.WriteLine("Unable to connect to server!");
+                return -1;
+            }
+        }
+
+        public static void GetUserCredentials(ref FtpClient client, Commands.Connect commands)
+        {
             string password = String.Empty;
             ConsoleKey key;
             client.Host = commands.IP;
@@ -41,32 +71,6 @@ namespace Client
 
             client.Credentials.Password = password;
             Console.WriteLine();
-
-            try
-            {
-                client.Connect();
-                path.ResetPaths();
-            }
-            catch (Exception ex)
-            {
-                if (ex.InnerException != null)
-                    Console.WriteLine(ex.InnerException.Message);
-                else
-                    Console.WriteLine(ex.Message);
-                return -1;
-            }
-
-            if (client.IsAuthenticated)
-            {
-                logger = new Logger(client.Credentials.UserName);
-                Console.WriteLine("Successfully connected to server!");
-                return 0;
-            }
-            else
-            {
-                Console.WriteLine("ERROR: unable to connect to server!");
-                return -1;
-            }
         }
      
         public static int Save(ref FtpClient client)
@@ -79,10 +83,9 @@ namespace Client
 
         }
 
-        public static int Disconnect(ref FtpClient client, ref Logger? logger)
+        public static int Disconnect(ref FtpClient client)
         {
             client.Disconnect();
-            logger = null;
             Console.WriteLine("--- All Connections Terminated ---\n");
             return 0;
         }

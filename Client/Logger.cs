@@ -3,32 +3,67 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentFTP;
 
 namespace Client
 {
     public class Logger : ILogger
     {
-        private string mFilePath;
+        public string? mRemotePath;
+        public readonly string LocalPath;
 
+
+        public Logger()
+        {
+            LocalPath = "Users" + Path.DirectorySeparatorChar + "LocalHost" + ".txt";
+            try
+            {
+                Directory.CreateDirectory("Users");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            mRemotePath = null;
+        }
         public Logger(string name)
         {
-            mFilePath = CreateDirectory(name);
+            LocalPath = "Users" + Path.DirectorySeparatorChar + "LocalHost" + ".txt";
+            try
+            {
+                Directory.CreateDirectory("Users");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            mRemotePath = "Users" + Path.DirectorySeparatorChar + name;
         }
-        /*
-        //log what the user typed and append that information to their log
-        public void Log(string message)
+        
+
+        public void Log(string[] message, in FtpClient client)
         {
-            StreamWriter streamWriter = File.AppendText(mFilePath + ".txt");
-            streamWriter.WriteLine(message + "\t" + DateTime.Now);
-            streamWriter.Close();
-        }*/
-        public void Log(string[] message)
-        {
-            StreamWriter streamWriter = File.AppendText(mFilePath + ".txt");
-            for (int i = 0; i < message.Length; i++)
-                streamWriter.Write(message[i] + " ");
-            streamWriter.WriteLine("\t" + DateTime.Now);
-            streamWriter.Close();
+            try
+            {
+                StreamWriter streamWriter;
+
+                if (client.IsAuthenticated)
+                    streamWriter = File.AppendText("Users" + Path.DirectorySeparatorChar + client.Credentials.UserName + ".txt");
+                else
+                    streamWriter = File.AppendText("Users" + Path.DirectorySeparatorChar + "LocalHost" + ".txt");
+
+                for (int i = 0; i < message.Length; i++)
+                    streamWriter.Write(message[i] + " ");
+                streamWriter.WriteLine("\t" + DateTime.Now);
+                streamWriter.Close();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
+                else
+                    Console.WriteLine(ex.Message);
+            }
         }
 
         //Creates new directory to store log information

@@ -28,25 +28,29 @@ namespace Client
             }
         }
 
+        public static void LogInput(ILogger logger, string[] args, in FtpClient client)
+        {
+            logger.Log(args, in client);
+        }
+
         static void Main(string[] args)
         {
             FtpClient client = new ();
             FilePath path = new ();
-            Logger? logger = null;
+            Logger logger = new();
 
             path.SetInitalPaths("./", "/");
-
 
             Console.WriteLine("FTP Client v1.0");
             Console.WriteLine(FiggleFonts.Big.Render("FTP. NET"));
 
             while (true)
             {
-                Console.Write("> ");
+               Console.Write("> ");
                 args = Console.ReadLine().Split(' ');
-                logger?.Log(args);
-                var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttribute<VerbAttribute>() != null).ToArray();
+                LogInput(logger, args, client);
 
+                var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttribute<VerbAttribute>() != null).ToArray();
 
                 //Parser.Default.ParseArguments(args, types).WithParsed(Run);
 
@@ -56,7 +60,7 @@ namespace Client
                 (Commands.Connect opts) => Connection.Connect(ref client, ref logger, opts, ref path),
                 (Commands.List opts) => Get.List(ref client, in path, args),
                 (Commands.Get opts) => Get.File(ref client, opts),
-                (Commands.Disconnect opts) => Connection.Disconnect(ref client, ref logger),
+                (Commands.Disconnect opts) => Connection.Disconnect(ref client),
                 (Commands.Quit opts) => Connection.Exit(),
                 (Commands.Put opts) => Put.File(ref client, opts),
                 (Commands.CreateDirectory opts) => Put.Create(ref client, opts),

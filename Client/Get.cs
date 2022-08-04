@@ -6,6 +6,7 @@ namespace Client
 {
     public static class Get
     {
+        private static readonly ILogger logger;
         public static int File(ref FtpClient client, Commands.Get files)
         {
             if (!client.IsAuthenticated)
