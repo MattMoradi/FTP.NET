@@ -17,30 +17,54 @@ namespace Client
             string password = String.Empty;
             ConsoleKey key;
             client.Host = commands.IP;
+            bool firstAuth = false;
 
-            Console.Write("Enter the username: ");
-            client.Credentials.UserName = Console.ReadLine();
-            Console.Write("Enter the password: ");
-
-            do
+            if (File.Exists(commands.IP + ".txt"))
             {
-                ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
-                key = keyInfo.Key;
-
-                if (key == ConsoleKey.Backspace && password.Length > 0)
+                try
                 {
-                    Console.Write("\b \b");
-                    password = password[0..^1];
+                    string? credFile = commands.IP + ".txt";
+                    File.Decrypt(credFile);
+                    using (StreamReader Reader = new StreamReader(credFile))
+                    {
+                        client.Credentials.UserName = Reader.ReadLine();
+                        client.Credentials.Password = Reader.ReadLine();
+                        client.AutoConnect();
+                    };
+                    File.Encrypt(credFile);
                 }
-                else if (!char.IsControl(keyInfo.KeyChar))
+                catch (Exception x)
                 {
-                    Console.Write("*");
-                    password += keyInfo.KeyChar;
+                    Console.WriteLine(x.ToString());
                 }
-            } while (key != ConsoleKey.Enter);
+            }
+            else
+            {
+                Console.Write("Enter the username: ");
+                client.Credentials.UserName = Console.ReadLine();
+                Console.Write("Enter the password: ");
+                firstAuth = true;
 
-            client.Credentials.Password = password;
-            Console.WriteLine();
+                do
+                {
+                    ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+                    key = keyInfo.Key;
+
+                    if (key == ConsoleKey.Backspace && password.Length > 0)
+                    {
+                        Console.Write("\b \b");
+                        password = password[0..^1];
+                    }
+                    else if (!char.IsControl(keyInfo.KeyChar))
+                    {
+                        Console.Write("*");
+                        password += keyInfo.KeyChar;
+                    }
+                } while (key != ConsoleKey.Enter);
+
+                client.Credentials.Password = password;
+                Console.WriteLine();
+            }
 
             try
             {
@@ -58,6 +82,14 @@ namespace Client
 
             if (client.IsAuthenticated)
             {
+                if (firstAuth)
+                {
+                    Console.Write("Would you like to save your login credentials? (Y/N): ");
+                    string? input = Console.ReadLine();
+                    if (input == "y" || input == "Y")
+                        Save(ref client);
+                }
+
                 logger = new Logger(client.Credentials.UserName);
                 Console.WriteLine("Successfully connected to server!");
                 return 0;
@@ -71,6 +103,22 @@ namespace Client
 
         public static int Save(ref FtpClient client)
         {
+            string? credsFile = client.Host + ".txt";
+            try
+            {
+                StreamWriter credentials = new StreamWriter(credsFile);
+                credentials.WriteLine(client.Credentials.UserName);
+                credentials.WriteLine(client.Credentials.Password);
+                credentials.Close();
+                File.Encrypt(credsFile);
+                return 0;
+            }
+            catch (Exception x)
+            {
+                File.Delete(credsFile);
+                Console.WriteLine(x.ToString());
+                return -1;
+            }
             return 0;
         }
 
