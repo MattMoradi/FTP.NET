@@ -40,7 +40,6 @@ namespace Client
                     ICryptoTransform cryptoTransform = cipher.CreateDecryptor();
                     byte[] pass = Convert.FromBase64String(password);
                     client.Credentials.Password = Encoding.UTF8.GetString(cryptoTransform.TransformFinalBlock(pass, 0, pass.Length));
-                    Console.WriteLine("Pass: " + client.Credentials.Password);
                     client.AutoConnect();
                 }
                 catch (Exception x)
