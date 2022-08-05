@@ -46,7 +46,7 @@ namespace Client
 
             while (true)
             {
-               Console.Write("> ");
+                Console.Write("> ");
                 args = Console.ReadLine().Split(' ');
                 LogInput(logger, args, client);
 

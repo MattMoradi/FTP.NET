@@ -7,7 +7,6 @@ namespace Client
     {
         public static int Connect(ref FtpClient client, ref Logger logger, Commands.Connect commands, ref Program.FilePath path)
         {
-            
             if (commands.IP == null)
             {
                 Console.WriteLine("ERROR: must provide a host name to connect!");
