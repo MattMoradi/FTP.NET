@@ -63,17 +63,11 @@ namespace Client
                 targetdir = file.Directories.Last();
             }
 
+
             //Check whether the source dir exists. If it does not, return an error message
             if (!client.DirectoryExists(file.Directories.First()))
             {
-                Console.WriteLine("The indicated directory does not exist.");
-                return -1;
-            }
-
-            //WE SHOULD HAVE A CHECK HERE TO ENSURE THAT THERE ARE NOT 'BAD CHARS' IN THE DIR STRING
-            if (!Path.IsPathFullyQualified(targetdir))
-            {
-                Console.WriteLine("You have provided an invalid target directory string.");
+                Console.WriteLine("The source directory does not exist.");
                 return -1;
             }
 
@@ -97,8 +91,19 @@ namespace Client
                 {
                     return 0;
                 }
-
             }
+
+            try
+            {
+                client.CreateDirectory(targetdir);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("The target directory name provided is invalid.");
+                Console.WriteLine("Error Message: " + ex.Message);
+                return -1;
+            }
+
             //ALL CHECKS SHOULD BE PERFORMED AT THIS POINT SO OK TO GO FORWARD WITH THE DL/UL/DEL
 
             string localtempdir = "C:\\fluentftp_tempdir";
