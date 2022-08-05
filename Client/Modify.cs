@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentFTP;
+using static Client.Program;
 
 namespace Client
 {
@@ -92,9 +93,11 @@ namespace Client
         /// <param name="client">ftpClient on which potential file to rename exists.</param>
         /// <param name="file">Rename command that specifies to rename local or remtoe file and file names to use.</param>
         /// <returns>0 if the file was renamed successfully, -1 if it failed.</returns>
-        public static int Rename(ref FtpClient client, Commands.Rename file)
+        public static int Rename(ref FtpClient client, Commands.Rename file, FilePath fpath)
         {
             int result = -1;
+
+            
             try
             {
                 int cont = RenameChecks(file, client.IsAuthenticated ? true : false);
@@ -103,13 +106,17 @@ namespace Client
                 // Also indicates local vs remote vs dual rename.
                 if (cont == -1) { return -1; }
 
+                Console.WriteLine("Directory: " + Directory.GetCurrentDirectory().ToString());
+                
+
                 if (cont == 0 || cont == 99)
                 {
+
                     if (client.IsAuthenticated)
                     {
                         Console.WriteLine($"Executing Remote Rename Of: {file.RemoteName}...");
                         // rename remote file
-                        if (client.MoveFile(file.RemoteName, file.NewName))
+                        if (client.MoveFile(fpath.Remote+file.RemoteName, fpath.Remote+file.NewName))
                         {
                             Console.WriteLine("Remote Rename Successfull!");
                         }
@@ -127,7 +134,7 @@ namespace Client
                 {
                     Console.WriteLine($"Executing Local Rename Of: {file.LocalName}...");
                     //Directory.Move is used for files
-                    Directory.Move(file.LocalName, file.NewName);
+                    Directory.Move(fpath.Local+file.LocalName, fpath.Local+file.NewName);
                     result = 0;
                 }
             }
@@ -308,6 +315,11 @@ namespace Client
             }
 
             Console.WriteLine("Error: Rename Failed. Unexpected Error Try Again...");
+            Console.WriteLine("Your Input (need atleast an old name and new name):");
+            Console.WriteLine($" Local File Name: {files.LocalName}");
+            Console.WriteLine($"Remote File Name: {files.RemoteName}");
+            Console.WriteLine($"   Old File Name: {files.OldName}");
+            Console.WriteLine($"   New File Name: {files.NewName}");
             Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
             return -1;
         }
