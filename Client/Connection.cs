@@ -1,13 +1,16 @@
-﻿using System;
+﻿using System.Text;
+using System.Security.Cryptography;
 using FluentFTP;
 
 namespace Client
 {
     public static class Connection
     {
+        const string passkey = "1oH8TUmMUeXdwiTftARezWQXCjuFxyIr6mAu/PdQWWg=";
+        const string iv = "21EAPkLZuJ9mYtV0GkDPjQ==";
+
         public static int Connect(ref FtpClient client, ref Logger logger, Commands.Connect commands, ref Program.FilePath path)
         {
-            
             if (commands.IP == null)
             {
                 Console.WriteLine("ERROR: must provide a host name to connect!");
@@ -24,14 +27,21 @@ namespace Client
                 try
                 {
                     string? credFile = commands.IP + ".txt";
-                    File.Decrypt(credFile);
                     using (StreamReader Reader = new StreamReader(credFile))
                     {
                         client.Credentials.UserName = Reader.ReadLine();
-                        client.Credentials.Password = Reader.ReadLine();
-                        client.AutoConnect();
+                        password = Reader.ReadLine();
+                        Reader.Close();
                     };
-                    File.Encrypt(credFile);
+
+                    Aes cipher = Aes.Create();
+                    cipher.Key = Convert.FromBase64String(passkey);
+                    cipher.IV = Convert.FromBase64String(iv);
+                    ICryptoTransform cryptoTransform = cipher.CreateDecryptor();
+                    byte[] pass = Convert.FromBase64String(password);
+                    client.Credentials.Password = Encoding.UTF8.GetString(cryptoTransform.TransformFinalBlock(pass, 0, pass.Length));
+                    Console.WriteLine("Pass: " + client.Credentials.Password);
+                    client.AutoConnect();
                 }
                 catch (Exception x)
                 {
@@ -104,13 +114,19 @@ namespace Client
         public static int Save(ref FtpClient client)
         {
             string? credsFile = client.Host + ".txt";
+
             try
             {
+                Aes cipher = Aes.Create();
+                cipher.Key = Convert.FromBase64String(passkey);
+                cipher.IV = Convert.FromBase64String(iv);
+                ICryptoTransform cryptoTransform = cipher.CreateEncryptor();
+                byte[] pass = Encoding.UTF8.GetBytes(client.Credentials.Password);
+
                 StreamWriter credentials = new StreamWriter(credsFile);
                 credentials.WriteLine(client.Credentials.UserName);
-                credentials.WriteLine(client.Credentials.Password);
+                credentials.WriteLine(Convert.ToBase64String(cryptoTransform.TransformFinalBlock(pass, 0, pass.Length)));
                 credentials.Close();
-                File.Encrypt(credsFile);
                 return 0;
             }
             catch (Exception x)
