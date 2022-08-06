@@ -93,9 +93,11 @@ namespace Client
         /// <param name="client">ftpClient on which potential file to rename exists.</param>
         /// <param name="file">Rename command that specifies to rename local or remtoe file and file names to use.</param>
         /// <returns>0 if the file was renamed successfully, -1 if it failed.</returns>
-        public static int Rename(ref FtpClient client, Commands.Rename file, FilePath fpath)
+        public static int Rename(ref FtpClient client, Commands.Rename file, FilePath dirs)
         {
             int result = -1;
+            var tempLoc = Directory.GetCurrentDirectory() + @"\Data";
+            var tempRem = dirs.Remote;
 
             
             try
@@ -106,23 +108,35 @@ namespace Client
                 // Also indicates local vs remote vs dual rename.
                 if (cont == -1) { return -1; }
 
-                Console.WriteLine("Directory: " + Directory.GetCurrentDirectory().ToString());
-                
-
                 if (cont == 0 || cont == 99)
                 {
 
                     if (client.IsAuthenticated)
                     {
+                        //DownloadMakeAtomic(client, tempLoc+ @$"\{file.RemoteName}", tempRem + @$"{file.RemoteName}");
+
                         Console.WriteLine($"Executing Remote Rename Of: {file.RemoteName}...");
-                        // rename remote file
-                        if (client.MoveFile(fpath.Remote+file.RemoteName, fpath.Remote+file.NewName))
+
+                        if (!client.FileExists(dirs.Remote + file.OldName))
                         {
-                            Console.WriteLine("Remote Rename Successfull!");
+                            // rename remote file
+                            if (client.MoveFile(dirs.Remote + file.RemoteName, dirs.Remote + file.NewName))
+                            {
+                                //DeleteMakeAtomic(tempLoc + @$"\{file.RemoteName}");
+                                Console.WriteLine("Remote Rename Successfull!");
+                            }
+                            else
+                            {
+                                //if (!client.FileExists(dirs.Remote + file.RemoteName))
+                                //UploadMakeAtomic(client, tempLoc + @$"\{file.RemoteName}");
+
+                                Console.WriteLine("Error: server failed to rename file. Make sure file to rename exists");
+                            }
                         }
                         else
                         {
-                            Console.WriteLine("Error: server failed to rename file. Make sure file to rename exists");
+                            Console.WriteLine($"Error: cannot rename file to {file.OldName}, file of that name already exists. try again");
+                            return -1;
                         }
                     }
                     else
@@ -132,10 +146,18 @@ namespace Client
                 }
                 if (cont == 1 || cont == 99)
                 {
-                    Console.WriteLine($"Executing Local Rename Of: {file.LocalName}...");
-                    //Directory.Move is used for files
-                    Directory.Move(fpath.Local+file.LocalName, fpath.Local+file.NewName);
-                    result = 0;
+                    if (Directory.Exists(dirs.Local + file.OldName))
+                    {
+                        Console.WriteLine($"Executing Local Rename Of: {file.LocalName}...");
+                        //Directory.Move is used for files
+                        Directory.Move(dirs.Local + file.LocalName, dirs.Local + file.NewName);
+                        result = 0;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error: cannot rename file to {file.OldName}, file of that name already exists. try again");
+                        return -1;
+                    }
                 }
             }
             catch(ArgumentException aExc)
@@ -166,7 +188,6 @@ namespace Client
 
             return result;
         }
-        
 
         /// <summary>
         /// Checks all arguments for proper syntax and indicates by the arguments given if 
@@ -185,12 +206,6 @@ namespace Client
                 Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
                 return -1;
             }
-            //if (string.IsNullOrEmpty(files.NewName))
-            //{
-            //    Console.WriteLine("Error, Need a rename value.");
-            //    Console.WriteLine(@"Expected: rename rename <path\to\file\oldname> <path\to\file\newname>");
-            //    return -1;
-            //}
             if (string.IsNullOrEmpty(files.LocalName) && string.IsNullOrEmpty(files.RemoteName) && string.IsNullOrEmpty(files.OldName) && !string.IsNullOrEmpty(files.NewName))
             {
                 if (!CheckExtension(files.NewName, "AND"))
