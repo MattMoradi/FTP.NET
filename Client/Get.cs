@@ -33,20 +33,35 @@ namespace Client
                 BackgroundCharacter = '\u2593'
             };
 
-            using var progressBar = new ProgressBar(10000, "downloaded", options);
-
-            Action<FtpProgress> progress = delegate (FtpProgress download)
-            {
-                    var progress = progressBar.AsProgress<double>();
-                    progress.Report(download.Progress / 100);
-            };
-
             try
             {
-                string fileName = files.Path.Substring(files.Path.LastIndexOf('/') + 1);
+                string fileName; 
 
                 if (files.Path != null)
-                    client.DownloadFile(fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
+                {
+                    fileName = files.Path.Substring(files.Path.LastIndexOf('/') + 1);
+
+                    if (client.FileExists(files.Path))
+                    {
+                        if (!client.DirectoryExists(files.Path))
+                        {
+                            Console.WriteLine("\nDownloading File: " + files.Path);
+                            using var progressBar = new ProgressBar(10000, "downloaded", options);
+
+                            Action<FtpProgress> progress = delegate (FtpProgress download)
+                            {
+                                var progress = progressBar.AsProgress<double>();
+                                progress.Report(download.Progress / 100);
+                            };
+
+                            client.DownloadFile(fileName, files.Path, FtpLocalExists.Overwrite, FtpVerify.OnlyChecksum, progress);
+                        }
+                        else
+                            Console.WriteLine("ERROR: Get does not support directories!");
+                    }
+                    else
+                        Console.WriteLine($"ERROR: File \"{files.Path}\" not found!");
+                }
                 else
                     Console.WriteLine("ERROR: File not specified!");
             }
