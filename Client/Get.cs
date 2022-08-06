@@ -279,10 +279,14 @@ namespace Client
             string tempPath;
 
             // For absolute path ex c:\dev
-            if (args[1][1].Equals(':'))
+            if (args.Count() == 3 && args[2][1].Equals(':'))
+			{
+                tempPath = args[2];
+			}
+            else if (args.Count() == 2 && args[1][1].Equals(':'))
 			{
                 tempPath = args[1];
-			}
+            }
             else
 			{
                 tempPath = path.Local;

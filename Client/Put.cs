@@ -7,14 +7,14 @@ namespace Client
 	{
 		public static int File(ref FtpClient client, Commands.Put file, in Program.FilePath path)
 		{
-			Console.WriteLine("file: " + file.File);
-
 			try
 			{
 				if (!client.IsAuthenticated)
 				{
 					throw new Exception("Error: No connection to remote server!");
 				}
+				Console.WriteLine("");
+
 
 				// Progress bar related code //
 				var options = new ProgressBarOptions
@@ -24,12 +24,6 @@ namespace Client
 					BackgroundColor = ConsoleColor.DarkGray,
 					BackgroundCharacter = '\u2593'
 				};
-				//var childOptions = new ProgressBarOptions
-				//{
-				//	ForegroundColor = ConsoleColor.Green,
-				//	BackgroundColor = ConsoleColor.DarkGreen,
-				//	ProgressCharacter = '─'
-				//};
 
 				using var progressBar = new ProgressBar(10000, "uploaded", options);
 				Action<FtpProgress> progress = delegate (FtpProgress upload)
@@ -37,17 +31,12 @@ namespace Client
 					var progress = progressBar.AsProgress<double>();
 					progress.Report(upload.Progress / 100);
 				};
+				// Progress bar related code 
 
 
 				if (file.Files != null && file.Files.Count() > 1)
 				{
-					//int i = 0;
-
-					//foreach (string file in files)
-					//{
-
-					//}
-
+					//foreach (string file in files){}
 					return MultipleFiles(ref client, file.Files, path, progress);
 				}
 				else
@@ -67,8 +56,11 @@ namespace Client
 		{
 			try
 			{
-				string fullRemotePath = path.Remote + Path.GetFileName(file.File);
-				client.UploadFile(@file.File, @fullRemotePath, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, progress);
+				if (file.Files == null)
+					throw new Exception("No argument passed!");
+				string localPath = file.Files.ElementAt(0);
+				string fullRemotePath = path.Remote + Path.GetFileName(localPath);
+				client.UploadFile(@localPath, @fullRemotePath, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, progress);
 				return 1;
 			}
 			catch (Exception e)
