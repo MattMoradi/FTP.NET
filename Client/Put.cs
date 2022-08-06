@@ -18,12 +18,17 @@ namespace Client
 				{
 					throw new Exception("No argument(s) passed for upload!");
 				}
-				foreach (string filepath in file.Files)
+				int i = 0;
+				string[] files = new string[file.Files.Count()];
+				foreach (string fp in file.Files)
 				{
-					if (!System.IO.File.Exists(filepath))
-					{
-						throw new Exception("\"" + filepath + "\" is not a valid filepath!");
-					}
+					if (fp.Length > 1 && fp[1] == ':')
+						files[i] = fp;
+					else
+						files[i] = path.Local + fp;
+					if (!System.IO.File.Exists(files[i]))
+						throw new Exception("\"" + fp + "\" is not a valid filepath!");
+					++i;
 				}
 
 				var options = new ProgressBarOptions
@@ -36,18 +41,22 @@ namespace Client
 
 				if (file.Files.Count() > 1)
 				{
-					return MultipleFiles(ref client, file.Files, path, options);
+					return MultipleFiles(ref client, files, path, options);
 				}
 				else
 				{
-					return SingleFile(ref client, file, path, options);
+					return SingleFile(ref client, files, path, options);
 				}
 			}
 			catch (Exception e)
 			{
 				if (e.InnerException != null)
 				{
-					Console.WriteLine("Error: " + e.InnerException.Message);
+					Exception realerror = e;
+					while (realerror.InnerException != null)
+						realerror = realerror.InnerException;
+
+					Console.WriteLine(realerror.Message);
 				}
 				else
 				{
@@ -57,9 +66,9 @@ namespace Client
 			}
 		}
 
-		public static int SingleFile(ref FtpClient client, Commands.Put file, in Program.FilePath path, ProgressBarOptions options)
+		public static int SingleFile(ref FtpClient client, string[] files, in Program.FilePath path, ProgressBarOptions options)
 		{
-			string localPath = file.Files.ElementAt(0);
+			string localPath = files[0];
 			string fullRemotePath = path.Remote + Path.GetFileName(localPath);
 
 			Console.WriteLine("Uploading File to: " + fullRemotePath);
@@ -83,7 +92,7 @@ namespace Client
 			}
 		}
 
-		public static int MultipleFiles(ref FtpClient client, IEnumerable<string> files, in Program.FilePath path, ProgressBarOptions options)
+		public static int MultipleFiles(ref FtpClient client, string[] files, in Program.FilePath path, ProgressBarOptions options)
 		{
 			Console.WriteLine("Uploading (" + files.Count() + ") files to: " + path.Remote);
 
