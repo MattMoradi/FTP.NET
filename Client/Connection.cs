@@ -1,13 +1,16 @@
-﻿using System;
+﻿using System.Text;
+using System.Security.Cryptography;
 using FluentFTP;
 
 namespace Client
 {
     public static class Connection
     {
+        const string passkey = "1oH8TUmMUeXdwiTftARezWQXCjuFxyIr6mAu/PdQWWg=";
+        const string iv = "21EAPkLZuJ9mYtV0GkDPjQ==";
+
         public static int Connect(ref FtpClient client, ref Logger logger, Commands.Connect commands, ref Program.FilePath path)
         {
-            
             if (commands.IP == null)
             {
                 Console.WriteLine("ERROR: must provide a host name to connect!");
@@ -17,30 +20,60 @@ namespace Client
             string password = String.Empty;
             ConsoleKey key;
             client.Host = commands.IP;
+            bool firstAuth = false;
 
-            Console.Write("Enter the username: ");
-            client.Credentials.UserName = Console.ReadLine();
-            Console.Write("Enter the password: ");
-
-            do
+            if (File.Exists(commands.IP + ".txt"))
             {
-                ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
-                key = keyInfo.Key;
-
-                if (key == ConsoleKey.Backspace && password.Length > 0)
+                try
                 {
-                    Console.Write("\b \b");
-                    password = password[0..^1];
-                }
-                else if (!char.IsControl(keyInfo.KeyChar))
-                {
-                    Console.Write("*");
-                    password += keyInfo.KeyChar;
-                }
-            } while (key != ConsoleKey.Enter);
+                    string? credFile = commands.IP + ".txt";
+                    using (StreamReader Reader = new StreamReader(credFile))
+                    {
+                        client.Credentials.UserName = Reader.ReadLine();
+                        password = Reader.ReadLine();
+                        Reader.Close();
+                    };
 
-            client.Credentials.Password = password;
-            Console.WriteLine();
+                    Aes cipher = Aes.Create();
+                    cipher.Key = Convert.FromBase64String(passkey);
+                    cipher.IV = Convert.FromBase64String(iv);
+                    ICryptoTransform cryptoTransform = cipher.CreateDecryptor();
+                    byte[] pass = Convert.FromBase64String(password);
+                    client.Credentials.Password = Encoding.UTF8.GetString(cryptoTransform.TransformFinalBlock(pass, 0, pass.Length));
+                    client.AutoConnect();
+                }
+                catch (Exception x)
+                {
+                    Console.WriteLine(x.ToString());
+                }
+            }
+            else
+            {
+                Console.Write("Enter the username: ");
+                client.Credentials.UserName = Console.ReadLine();
+                Console.Write("Enter the password: ");
+                firstAuth = true;
+
+                do
+                {
+                    ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+                    key = keyInfo.Key;
+
+                    if (key == ConsoleKey.Backspace && password.Length > 0)
+                    {
+                        Console.Write("\b \b");
+                        password = password[0..^1];
+                    }
+                    else if (!char.IsControl(keyInfo.KeyChar))
+                    {
+                        Console.Write("*");
+                        password += keyInfo.KeyChar;
+                    }
+                } while (key != ConsoleKey.Enter);
+
+                client.Credentials.Password = password;
+                Console.WriteLine();
+            }
 
             try
             {
@@ -58,6 +91,14 @@ namespace Client
 
             if (client.IsAuthenticated)
             {
+                if (firstAuth)
+                {
+                    Console.Write("Would you like to save your login credentials? (Y/N): ");
+                    string? input = Console.ReadLine();
+                    if (input == "y" || input == "Y")
+                        Save(ref client);
+                }
+
                 logger = new Logger(client.Credentials.UserName);
                 Console.WriteLine("Successfully connected to server!");
                 return 0;
@@ -71,6 +112,28 @@ namespace Client
 
         public static int Save(ref FtpClient client)
         {
+            string? credsFile = client.Host + ".txt";
+
+            try
+            {
+                Aes cipher = Aes.Create();
+                cipher.Key = Convert.FromBase64String(passkey);
+                cipher.IV = Convert.FromBase64String(iv);
+                ICryptoTransform cryptoTransform = cipher.CreateEncryptor();
+                byte[] pass = Encoding.UTF8.GetBytes(client.Credentials.Password);
+
+                StreamWriter credentials = new StreamWriter(credsFile);
+                credentials.WriteLine(client.Credentials.UserName);
+                credentials.WriteLine(Convert.ToBase64String(cryptoTransform.TransformFinalBlock(pass, 0, pass.Length)));
+                credentials.Close();
+                return 0;
+            }
+            catch (Exception x)
+            {
+                File.Delete(credsFile);
+                Console.WriteLine(x.ToString());
+                return -1;
+            }
             return 0;
         }
 
