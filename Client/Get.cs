@@ -276,13 +276,24 @@ namespace Client
         //Method that changes the current local directory
         private static int ChangeLocalDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
         {
-            string tempPath = path.Local;
-            //find the number of args provided and where the
-            //directory that is wanting to be displayed is located
-            if (index + 3 == args.Length)//passes when the users provides -l flag
-                tempPath += args[2] + "/";
-            else if (index + 2 == args.Length)//passes when the user does not provide -l flag
-                tempPath += args[1] + "/";
+            string tempPath;
+
+            // For absolute path ex c:\dev
+            if (args[1][1].Equals(':'))
+			{
+                tempPath = args[1];
+			}
+            else
+			{
+                tempPath = path.Local;
+                //find the number of args provided and where the
+                //directory that is wanting to be displayed is located
+                if (index + 3 == args.Length)//passes when the users provides -l flag
+                    tempPath += args[2] + "/";
+                else if (index + 2 == args.Length)//passes when the user does not provide -l flag
+                    tempPath += args[1] + "/";
+            }
+
 
             if (!Directory.Exists(tempPath))
             {
