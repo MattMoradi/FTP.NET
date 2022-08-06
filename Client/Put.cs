@@ -34,7 +34,7 @@ namespace Client
 					BackgroundCharacter = '\u2593'
 				};
 
-				if (file.Files != null && file.Files.Count() > 1)
+				if (file.Files.Count() > 1)
 				{
 					return MultipleFiles(ref client, file.Files, path, options);
 				}
