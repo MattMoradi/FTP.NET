@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using FluentFTP;
 using ShellProgressBar;
 namespace Client
@@ -11,12 +12,20 @@ namespace Client
 			{
 				if (!client.IsAuthenticated)
 				{
-					throw new Exception("Error: No connection to remote server!");
+					throw new Exception("No connection to remote server!");
 				}
-				Console.WriteLine("");
+				if (file.Files == null || !file.Files.Any())
+				{
+					throw new Exception("No argument(s) passed for upload!");
+				}
+				foreach (string filepath in file.Files)
+				{
+					if (!System.IO.File.Exists(filepath))
+					{
+						throw new Exception("\"" + filepath + "\" is not a valid filepath!");
+					}
+				}
 
-
-				// Progress bar related code //
 				var options = new ProgressBarOptions
 				{
 					ForegroundColor = ConsoleColor.Yellow,
@@ -25,64 +34,69 @@ namespace Client
 					BackgroundCharacter = '\u2593'
 				};
 
-				using var progressBar = new ProgressBar(10000, "uploaded", options);
-				Action<FtpProgress> progress = delegate (FtpProgress upload)
-				{
-					var progress = progressBar.AsProgress<double>();
-					progress.Report(upload.Progress / 100);
-				};
-				// Progress bar related code 
-
-
 				if (file.Files != null && file.Files.Count() > 1)
 				{
-					//foreach (string file in files){}
-					return MultipleFiles(ref client, file.Files, path, progress);
+					return MultipleFiles(ref client, file.Files, path, options);
 				}
 				else
 				{
-					return SingleFile(ref client, file, path, progress);
+					return SingleFile(ref client, file, path, options);
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.Message);
+				if (e.InnerException != null)
+				{
+					Console.WriteLine("Error: " + e.InnerException.Message);
+				}
+				else
+				{
+					Console.WriteLine("Error: " + e.Message);
+				}
 				return -1;
 			}
-			return 0;
 		}
 
-		public static int SingleFile(ref FtpClient client, Commands.Put file, in Program.FilePath path, Action<FtpProgress> progress)
+		public static int SingleFile(ref FtpClient client, Commands.Put file, in Program.FilePath path, ProgressBarOptions options)
 		{
-			try
+			string localPath = file.Files.ElementAt(0);
+			string fullRemotePath = path.Remote + Path.GetFileName(localPath);
+
+			Console.WriteLine("Uploading File to: " + fullRemotePath);
+
+			using var progressBar = new ProgressBar(10000, "uploaded", options);
+			Action<FtpProgress> progress = delegate (FtpProgress upload)
 			{
-				if (file.Files == null)
-					throw new Exception("No argument passed!");
-				string localPath = file.Files.ElementAt(0);
-				string fullRemotePath = path.Remote + Path.GetFileName(localPath);
-				client.UploadFile(@localPath, @fullRemotePath, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, progress);
+				var progress = progressBar.AsProgress<double>();
+				progress.Report(upload.Progress / 100);
+			};
+
+			FtpStatus status = client.UploadFile(@localPath, @fullRemotePath, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, progress);
+			if (status == FtpStatus.Failed)
+			{
+				throw new Exception("Failed to upload file: " + localPath);
+			}
+			else
+			{
+				Console.WriteLine("Successfully uploaded file: " + fullRemotePath);     // load bar seems to overwrite this?
 				return 1;
 			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.InnerException);
-				return -1;
-			}
 		}
 
-		public static int MultipleFiles(ref FtpClient client, IEnumerable<string> files, in Program.FilePath path, Action<FtpProgress> progress)
+		public static int MultipleFiles(ref FtpClient client, IEnumerable<string> files, in Program.FilePath path, ProgressBarOptions options)
 		{
-			try
+			Console.WriteLine("Uploading (" + files.Count() + ") files to: " + path.Remote);
+
+			using var progressBar = new ProgressBar(10000, "uploaded", options);
+			Action<FtpProgress> progress = delegate (FtpProgress upload)
 			{
-				int number = client.UploadFiles(files, path.Remote, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, FtpError.Throw, progress);
-				Console.WriteLine(number + " files uploaded successfully");
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.InnerException);
-				return -1;
-			}
-			return 0;
+				var progress = progressBar.AsProgress<double>();
+				progress.Report(upload.Progress / 100);
+			};
+
+			int number = client.UploadFiles(files, path.Remote, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, FtpError.Throw, progress);
+			Console.WriteLine(number + " files uploaded successfully!");    // load bar seems to overwrite this?
+			return 1;
 		}
 
 		public static int Create(ref FtpClient client, Commands.CreateDirectory directory)
