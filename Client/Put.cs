@@ -27,7 +27,9 @@ namespace Client
 						files[i] = fp;
 					}
 					else
+					{
 						files[i] = path.Local + fp;
+					}
 					if (!System.IO.File.Exists(files[i]))
 					{
 						throw new Exception("\"" + fp + "\" is not a valid filepath!");
@@ -89,11 +91,7 @@ namespace Client
 			{
 				throw new Exception("Failed to upload file: " + localPath);
 			}
-			else
-			{
-				Console.WriteLine("Successfully uploaded file: " + fullRemotePath);     // load bar seems to overwrite this?
-				return 1;
-			}
+			return 1;
 		}
 
 		public static int MultipleFiles(ref FtpClient client, string[] files, in Program.FilePath path, ProgressBarOptions options)
@@ -107,8 +105,7 @@ namespace Client
 				progress.Report(upload.Progress / 100);
 			};
 
-			int number = client.UploadFiles(files, path.Remote, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, FtpError.Throw, progress);
-			Console.WriteLine(number + " files uploaded successfully!");    // load bar seems to overwrite this?
+			client.UploadFiles(files, path.Remote, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, FtpError.Throw, progress);
 			return 1;
 		}
 
