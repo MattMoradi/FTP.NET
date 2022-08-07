@@ -14,8 +14,4 @@
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
-
 </Project>

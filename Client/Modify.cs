@@ -110,32 +110,33 @@ namespace Client
 
                 if (cont == 0 || cont == 99)
                 {
-
+                    
                     if (client.IsAuthenticated)
                     {
-                        //DownloadMakeAtomic(client, tempLoc+ @$"\{file.RemoteName}", tempRem + @$"{file.RemoteName}");
-
                         Console.WriteLine($"Executing Remote Rename Of: {file.RemoteName}...");
 
-                        if (!client.FileExists(dirs.Remote + file.OldName))
+                        // avoids renaming to a name that already exists
+                        if (!client.FileExists(dirs.Remote + file.NewName))
                         {
                             // rename remote file
                             if (client.MoveFile(dirs.Remote + file.RemoteName, dirs.Remote + file.NewName))
                             {
-                                //DeleteMakeAtomic(tempLoc + @$"\{file.RemoteName}");
                                 Console.WriteLine("Remote Rename Successfull!");
                             }
                             else
                             {
-                                //if (!client.FileExists(dirs.Remote + file.RemoteName))
-                                //UploadMakeAtomic(client, tempLoc + @$"\{file.RemoteName}");
-
+                                // if rename fails, checks that the supplied file exists.
+                                if (!client.FileExists(dirs.Remote + file.OldName))
+                                {
+                                    Console.WriteLine($"Error: file: {file.OldName} does not exist. try again.");
+                                }
                                 Console.WriteLine("Error: server failed to rename file. Make sure file to rename exists");
+                                Console.WriteLine(@"Expected: rename <OldName> <NewName>");
                             }
                         }
                         else
                         {
-                            Console.WriteLine($"Error: cannot rename file to {file.OldName}, file of that name already exists. try again");
+                            Console.WriteLine($"Error: cannot rename file to {file.NewName}, file of that name already exists. try again");
                             return -1;
                         }
                     }
@@ -146,7 +147,7 @@ namespace Client
                 }
                 if (cont == 1 || cont == 99)
                 {
-                    if (Directory.Exists(dirs.Local + file.OldName))
+                    if (!Directory.Exists(dirs.Local + file.NewName))
                     {
                         Console.WriteLine($"Executing Local Rename Of: {file.LocalName}...");
                         //Directory.Move is used for files
@@ -163,12 +164,12 @@ namespace Client
             catch(ArgumentException aExc)
             {
                 Console.WriteLine($"Error: rename failed, incorrect parameters: {aExc}");
-                Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
+                Console.WriteLine(@"Expected: rename <OldName> <NewName>");
             }
             catch(DirectoryNotFoundException dnfExc)
             {
                 Console.WriteLine($"Error: directory not found. auto exception message: {dnfExc.Message}");
-                Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
+                Console.WriteLine(@"Expected: rename <OldName> <NewName>");
             }
             catch(UnauthorizedAccessException uaaExc)
             {
@@ -177,7 +178,7 @@ namespace Client
             catch(Exception exc)
             {
                 Console.WriteLine($"Error: failed to rename: {(string.IsNullOrEmpty(file.RemoteName) ? file.LocalName : file.RemoteName)}. Auto Exception Msg: {exc.Message}");
-                Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
+                Console.WriteLine(@"Expected: rename <OldName> <NewName>");
             }
 
             if (result == 0)
@@ -203,7 +204,7 @@ namespace Client
             if (string.IsNullOrEmpty(files.LocalName) && string.IsNullOrEmpty(files.NewName) && string.IsNullOrEmpty(files.RemoteName) && string.IsNullOrEmpty(files.OldName))
             {
                 Console.WriteLine($"Error: missing parameters. Need a local OR remote file to rename AND the new file name");
-                Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
+                Console.WriteLine(@"Expected: rename <OldName> <NewName>");
                 return -1;
             }
             if (string.IsNullOrEmpty(files.LocalName) && string.IsNullOrEmpty(files.RemoteName) && string.IsNullOrEmpty(files.OldName) && !string.IsNullOrEmpty(files.NewName))
@@ -214,7 +215,7 @@ namespace Client
                 }
 
                 Console.WriteLine($"Error: local and/or remote file name missing");
-                Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
+                Console.WriteLine(@"Expected: rename <OldName> <NewName>");
                 return -1;
             }
 
@@ -238,13 +239,13 @@ namespace Client
                 {
                     if (CheckExtension(files.NewName, "OR"))
                     {
-                        Console.WriteLine($"Error: Incorrect New File Name: {files.NewName}");
+                        Console.WriteLine($"Error: Incorrect New File Name: {files.NewName}. missing extension.");
                     }
                     if (CheckExtension(files.OldName, "OR"))
                     {
-                        Console.WriteLine($"Error: Incorrect Old File Name: {files.OldName}");
+                        Console.WriteLine($"Error: Incorrect Old File Name: {files.OldName}. missing extension");
                     }
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file arguements: <FileName.ext>");
                     return -1;
                 }
             }
@@ -265,13 +266,13 @@ namespace Client
                 else if (CheckExtension(files.RemoteName, "OR")) 
                 {
                     Console.WriteLine($"Error: Incorrect Remote File Name: {files.RemoteName}, Missing Extension");
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file arguments: <FileName.ext>");
                     return -1;
                 }
                 else if (CheckExtension(files.OldName, "OR"))
                 {
                     Console.WriteLine($"Error: Incorrect RenameValue: {files.NewName}, Missing extension.");
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file arguments: <FileName.ext>");
                     return -1;
                 }
             }
@@ -291,13 +292,13 @@ namespace Client
                 else if (CheckExtension(files.LocalName, "OR"))
                 {
                     Console.WriteLine($"Invalid Local File Name: {files.LocalName}. Incorrect Extension.");
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file name: <FileName.ext>");
                     return -1;
                 }
                 else if (CheckExtension(files.OldName, "OR"))
                 {
                     Console.WriteLine($"Incorrect Rename Value: {files.OldName}. Incorrect Extension.");
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file name: <filename.ext>");
                     return -1;
                 }
             }
@@ -312,19 +313,19 @@ namespace Client
                 else if (CheckExtension(files.LocalName, "OR"))
                 {
                     Console.WriteLine($"Error: Invalid Local File Name: {files.LocalName}. Incorrect Extension.");
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file name: <FileName.ext>");
                     return -1;
                 }
                 else if (CheckExtension(files.NewName, "OR"))
                 {
                     Console.WriteLine($"Error: Incorrect Rename Value: {files.NewName}. Incorrect Extension.");
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file name: <filename.ext>");
                     return -1;
                 }
                 else if (CheckExtension(files.RemoteName, "OR"))
                 {
                     Console.WriteLine($"Error: Incorrect Remote Value: {files.RemoteName}. Incorrect Extension.");
-                    Console.WriteLine(@"Expected: <path\to\file\filename.ext>");
+                    Console.WriteLine(@"Expected file name: <filename.ext>");
                     return -1;
                 }
             }
@@ -335,7 +336,7 @@ namespace Client
             Console.WriteLine($"Remote File Name: {files.RemoteName}");
             Console.WriteLine($"   Old File Name: {files.OldName}");
             Console.WriteLine($"   New File Name: {files.NewName}");
-            Console.WriteLine(@"Expected: rename <path\to\file\oldname> <path\to\file\newname>");
+            Console.WriteLine(@"Expected: rename <oldname> <newname>");
             return -1;
         }
 
