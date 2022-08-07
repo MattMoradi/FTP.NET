@@ -25,7 +25,7 @@ namespace Client
 					if (fp.Length > 1 && fp[1] == ':')
 						files[i] = fp;
 					else
-						files[i] = path.Local + fp;
+						files[i] = path.Local + '\\' + fp;
 					if (!System.IO.File.Exists(files[i]))
 						throw new Exception("\"" + fp + "\" is not a valid filepath!");
 					++i;
