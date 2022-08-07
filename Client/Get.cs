@@ -75,7 +75,7 @@ namespace Client
         public static int List(ref FtpClient client, Commands.List directory, in Program.FilePath path, in string[] args)
         {
             if ((!args.Contains("-r")) && (!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
-                return ListLocalDirectory(in path);//ill let peter configure this part
+                return ListLocalDirectory(in path, in args);
             else
                 return ListRemoteDirectory(ref client, in path, in args);  
         }
@@ -133,24 +133,30 @@ namespace Client
         }
 
         //Lists the current directory the user is in on their local machine
-        private static int ListLocalDirectory(in Program.FilePath path)
+        private static int ListLocalDirectory(in Program.FilePath path, in string[] args)
         {
             Console.WriteLine();
-            //string filePath = "/";
+
             try
             {
-                //I don't think this part is needed anymore
-                /*
-                if (directory.Local != null)
-                {
-                    filePath = Path.GetFullPath(directory.Local);
+                DirectoryInfo dir;
+                if (args.Length == 2)
+				{
+                    dir = new DirectoryInfo(args[1]);
                 }
-                else if (directory.Remote != null)
-                {
-                    throw new InvalidOperationException("listing remote files (ls -r) not implemented");         // to be implemented!
-                }*/
+                else if (args.Length == 3)
+				{
+                    dir = new DirectoryInfo(args[2]);
+                }
+                else if (args.Length >= 4)
+				{
+                    throw new Exception("Too many arguments!");
+				}
+                else
+				{
+                    dir = new DirectoryInfo(path.Local);
+				}
 
-                DirectoryInfo dir = new DirectoryInfo(path.Local);
                 DirectoryInfo[] sub_directories = dir.GetDirectories();
                 FileInfo[] files = dir.GetFiles();
 
@@ -171,11 +177,24 @@ namespace Client
             }
             catch (DirectoryNotFoundException e)
             {
-                Console.WriteLine("Directory not found");
+                Console.WriteLine("Error: Directory not found");
+                return -1;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                if (e.InnerException != null)
+                {
+                    Exception realerror = e;
+                    while (realerror.InnerException != null)
+                        realerror = realerror.InnerException;
+
+                    Console.WriteLine("Error: " + realerror.Message);
+                }
+                else
+				{
+                    Console.WriteLine("Error: " + e.Message);
+				}
+                return -1;
             }
             
         Console.WriteLine();
