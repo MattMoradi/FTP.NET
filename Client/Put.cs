@@ -91,7 +91,7 @@ namespace Client
 			{
 				throw new Exception("Failed to upload file: " + localPath);
 			}
-			return 1;
+			return 0;
 		}
 
 		public static int MultipleFiles(ref FtpClient client, string[] files, in Program.FilePath path, ProgressBarOptions options)
@@ -106,7 +106,7 @@ namespace Client
 			};
 
 			client.UploadFiles(files, path.Remote, FtpRemoteExists.Overwrite, true, FtpVerify.OnlyChecksum, FtpError.Throw, progress);
-			return 1;
+			return 0;
 		}
 
 		public static int Create(ref FtpClient client, Commands.CreateDirectory directory)
