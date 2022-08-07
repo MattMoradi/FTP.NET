@@ -42,10 +42,7 @@ namespace Client
         [Verb("put", HelpText = "Upload files to remote server")]
         public class Put
         {
-            [Value(0, MetaName = "file", HelpText = "File to upload to remote server")]
-            public string? File { get; set; }
-
-            [Option('m', "multiple", Required = false, HelpText = "Upload multiple files to remote")]
+            [Value(0, MetaName = "files", HelpText = "Files to upload to remote server")]
             public IEnumerable<string>? Files { get; set; }
         }
 

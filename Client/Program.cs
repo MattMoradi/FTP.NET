@@ -58,7 +58,7 @@ namespace Client
                 (Commands.Get opts) => Get.File(ref client, opts),
                 (Commands.Disconnect opts) => Connection.Disconnect(ref client, ref logger),
                 (Commands.Quit opts) => Connection.Exit(),
-                (Commands.Put opts) => Put.File(ref client, opts),
+                (Commands.Put opts) => Put.File(ref client, opts, in path),
                 (Commands.CreateDirectory opts) => Put.Create(ref client, opts),
                 (Commands.Delete opts) => Modify.Delete(ref client, opts),
                 (Commands.Permissions opts) => Modify.Permissions(ref client, opts),
