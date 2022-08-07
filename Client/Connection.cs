@@ -96,7 +96,7 @@ namespace Client
                     Console.Write("Would you like to save your login credentials? (Y/N): ");
                     string? input = Console.ReadLine();
                     if (input == "y" || input == "Y")
-                        Save(ref client);
+                        Save(client);
                 }
 
                 logger = new Logger(client.Credentials.UserName);
@@ -110,7 +110,7 @@ namespace Client
             }
         }
 
-        public static int Save(ref FtpClient client)
+        public static int Save(FtpClient client)
         {
             string? credsFile = client.Host + ".txt";
 
@@ -131,10 +131,9 @@ namespace Client
             catch (Exception x)
             {
                 File.Delete(credsFile);
-                Console.WriteLine(x.ToString());
+                Console.WriteLine("ERROR: " + x.Message);
                 return -1;
             }
-            return 0;
         }
 
         public static void Timeout(ref FtpClient client)

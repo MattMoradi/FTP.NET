@@ -51,7 +51,7 @@ namespace Client
                 //Parser.Default.ParseArguments(args, types).WithParsed(Run);
 
                 Parser.Default.ParseArguments<Commands.Connect, Commands.List, Commands.Get, Commands.Disconnect, Commands.Quit,
-                    Commands.Put, Commands.CreateDirectory, Commands.Delete, Commands.Permissions, Commands.Copy, Commands.Save,
+                    Commands.Put, Commands.CreateDirectory, Commands.Delete, Commands.Permissions, Commands.Copy,
                     Commands.ChangeDirectory, Commands.Rename>(args).MapResult(
                 (Commands.Connect opts) => Connection.Connect(ref client, ref logger, opts, ref path),
                 (Commands.List opts) => Get.List(ref client, opts, in path, args),
@@ -63,7 +63,6 @@ namespace Client
                 (Commands.Delete opts) => Modify.Delete(ref client, opts),
                 (Commands.Permissions opts) => Modify.Permissions(ref client, opts),
                 (Commands.Copy opts) => Put.Copy(ref client, opts),
-                (Commands.Save opts) => Connection.Save(ref client),
                 (Commands.ChangeDirectory opts) => Get.ChangeDirectory(in client, ref path, in args),
                 (Commands.Rename opts) => Modify.Rename(ref client, opts, path), errs => 1);
                 
