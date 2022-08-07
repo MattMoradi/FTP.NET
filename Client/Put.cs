@@ -28,7 +28,7 @@ namespace Client
 					}
 					else
 					{
-						files[i] = path.Local + fp;
+						files[i] = path.Local + "\\" + fp;
 					}
 					if (!System.IO.File.Exists(files[i]))
 					{
