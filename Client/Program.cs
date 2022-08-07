@@ -65,7 +65,7 @@ namespace Client
                 (Commands.Copy opts) => Put.Copy(ref client, opts),
                 (Commands.Save opts) => Connection.Save(ref client),
                 (Commands.ChangeDirectory opts) => Get.ChangeDirectory(in client, ref path, in args),
-                (Commands.Rename opts) => Modify.Rename(ref client, opts), errs => 1);
+                (Commands.Rename opts) => Modify.Rename(ref client, opts, path), errs => 1);
                 
             }
         }

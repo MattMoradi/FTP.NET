@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using FluentFTP;
 using ShellProgressBar;
 
@@ -14,9 +15,16 @@ namespace Client
                 return -1;
             }
 
-            if (files.Files.Count() > 1)
-                return MultipleFiles(files.Files);
+            if (!string.IsNullOrEmpty(files.Path))
+                Console.WriteLine("\nDownloading File: " + files.Path);
 
+            if (files.Files.Count() >= 1)
+                return MultipleFiles(client, files.Files, files.LocalPath);
+            else if (!string.IsNullOrEmpty(files.Directory))
+            {
+                return RemoteDirectory(client, files.Directory, files.LocalPath);
+            }
+            
             var options = new ProgressBarOptions
             {
                 ForegroundColor = ConsoleColor.Yellow,
@@ -64,11 +72,142 @@ namespace Client
             return 0;
         }
 
-        public static int MultipleFiles(IEnumerable<string> files)
+        /// <summary>
+        /// Uses FluentFtp library method to find files on a remote server as a query executed against the passed in
+        /// ftpClient.
+        /// </summary>
+        /// <param name="ftpClient">Connection to remote ftp protocal server.</param>
+        /// <param name="remoteDirs">List of file directories.</param>
+        /// <param name="localDir">Local directory to save files.</param>
+        /// <returns>Number of files found or -1 if error occurs.</returns>
+        public static int MultipleFiles(FtpClient ftpClient, IEnumerable<string> remoteDirs, string localDir)
         {
-            foreach (string file in files)
-                Console.WriteLine(file); // remove this
-            return 0;
+            try
+            {
+                var badFleNmeCount = 0;
+                // Check for no Client connection
+                if (!ftpClient.IsAuthenticated)
+                {
+                    Console.WriteLine("Error Host Not Specified. Try \"Connect\" Command");
+                    return -1;
+                }
+
+                // Verify local directory is a directory
+                if (!string.IsNullOrEmpty(localDir) && localDir.Contains('.'))
+                {
+                    Console.WriteLine("local directory must be a directory not a file path. Try Again");
+                    return -1;
+                }
+
+                // Check for incorrect file names
+                remoteDirs.ToList().ForEach(rd =>
+                {
+                    if (!rd.Contains('.') || rd.Last().Equals('.'))
+                    {
+                        Console.WriteLine($"Incorrect File Name: {rd}, Missing File Extension");
+                        ++badFleNmeCount;
+                    }
+                });
+
+                // if all file names are bad display error and return
+                if (badFleNmeCount == remoteDirs.Count())
+                {
+                    Console.WriteLine("Incorrect Remote File Names. Try again.");
+                    return -1;
+                }
+
+                Console.WriteLine("Downloading Files...\n");
+
+                // check if local was provided or not. if not use default.
+                localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
+                
+                // executes download of remoteDirectories to the local location.
+                var result = ftpClient.DownloadFiles(localDir, remoteDirs);
+
+                if ((result + badFleNmeCount) - remoteDirs.Count() == 0)
+                    Console.WriteLine($"{result.ToString()} File(s) Downloaded. {badFleNmeCount} File(s) Failed for incorrect file name.");
+
+                // let user know where files were downloaded incase local dir not provided
+                if (result > 0)
+                    Console.WriteLine($"Files Found Saved to {localDir}");
+
+                // # files downloaded
+                return result;
+            }
+            catch(ArgumentException aExc)
+            {
+                Console.WriteLine($"Incorrect Parameters: Auto Exception Message {aExc.Message}");
+                return -1;
+            }
+            catch(FtpException ftpExc)
+            {
+                Console.WriteLine($"FtpClient unexpected error, download failed. Auto Exception Msg: {ftpExc.Message}");
+                return -1;
+            }
+            catch(Exception exc)
+            {
+                Console.WriteLine($"Failed to retrieve multiple files. Auto Exception Msg: {exc.Message}");
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// Uses the FluentFtp library to find and download a directory from the remote server to the local directory.
+        /// </summary>
+        /// <param name="ftpClient">Connection to remote ftp protocal server.</param>
+        /// <param name="remoteDir">Remote directory to grab.</param>
+        /// <param name="localDir">Local directory where items are saved.</param>
+        /// <returns>Number of files downloaded from directory.</returns>
+        public static int RemoteDirectory(FtpClient ftpClient, string remoteDir, string localDir = "")
+        {
+            try
+            {
+                if (!ftpClient.IsConnected)
+                {
+                    Console.WriteLine("FTP Host Not Specified, Try The \"Connect\" Command");
+                    return -1;
+                }
+
+                if (string.IsNullOrEmpty(remoteDir) || remoteDir.Contains('.'))
+                {
+                    Console.WriteLine($"Incorrect remote directory name value: {remoteDir}. Try again.");
+                    return - 1;
+                }
+
+                if (!string.IsNullOrEmpty(localDir) && localDir.Contains('.'))
+                {
+                    Console.WriteLine($"Incorrect local directory name: {localDir} try again.");
+                    return -1;
+                }
+
+                Console.WriteLine($"Downloading Directory: {remoteDir}...");
+                var result = 0;
+
+                // Use the user indicated directory or evironement directory if not specified
+                localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
+
+                // execute directory download
+                var dir = ftpClient.DownloadDirectory(localDir, remoteDir, FtpFolderSyncMode.Update);
+
+                // determine how many files were downloaded ignoring the skipped and overwritten files.
+                dir.ForEach(d => { if (d.IsDownload) ++result; });
+                
+                if (result > 0)
+                    Console.WriteLine($"Directory downloaded to {localDir}.");
+
+                // return number of files downloaded successfully
+                return result;
+            }
+            catch(ArgumentException aExc)
+            {
+                Console.WriteLine($"Incorrect Parameters, {aExc.Message}");
+                return -1;
+            }
+            catch(Exception exc)
+            {
+                Console.WriteLine($"Failed to retrieve directory: {remoteDir}. Auto Generated Exception Msg: {exc.Message}");
+                return -1;
+            }
         }
 
         //Wrapper to check which directory should be displayed to the console
