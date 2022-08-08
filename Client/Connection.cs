@@ -6,8 +6,8 @@ namespace Client
 {
     public static class Connection
     {
-        const string passkey = "1oH8TUmMUeXdwiTftARezWQXCjuFxyIr6mAu/PdQWWg=";
-        const string iv = "21EAPkLZuJ9mYtV0GkDPjQ==";
+        public const string passkey = "1oH8TUmMUeXdwiTftARezWQXCjuFxyIr6mAu/PdQWWg=";
+        public const string iv = "21EAPkLZuJ9mYtV0GkDPjQ==";
 
         public static int Connect(ref FtpClient client, ref Logger logger, Commands.Connect commands, ref Program.FilePath path)
         {
