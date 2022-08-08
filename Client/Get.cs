@@ -129,8 +129,13 @@ namespace Client
 
                 // let user know where files were downloaded incase local dir not provided
                 if (result > 0)
+                {
                     Console.WriteLine($"Files Found Saved to {localDir}");
-
+                }
+                else
+                {
+                    Console.WriteLine("Failed to Download Files. Try again.");
+                }
                 // # files downloaded
                 return result;
             }
