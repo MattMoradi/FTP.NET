@@ -42,7 +42,7 @@ namespace Client
         /// <param name="file">Permission levels and file path</param>
         /// <returns>0 if successful else -1.</returns>
         /// <remarks>Only works on unix platforms accepting CHMOD operations</remarks>
-        public static int Permissions(ref FtpClient client, Commands.Permissions file)
+        public static int Permissions(ref FtpClient client, Commands.Permissions file, FilePath dirs)
         {
             
             int result = -1;
@@ -68,7 +68,7 @@ namespace Client
                 }
 
                 // Invoke library method to execute permission change.
-                client.SetFilePermissions(file.FilePath, ((file.Owner * 100) + (file.Group * 10) + file.Others));
+                client.SetFilePermissions(dirs.Remote+file.FilePath, ((file.Owner * 100) + (file.Group * 10) + file.Others));
                 
                 result = 0;
             }
