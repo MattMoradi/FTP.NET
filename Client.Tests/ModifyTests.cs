@@ -1,6 +1,7 @@
 ﻿using FluentFTP;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,54 @@ namespace Client.Tests
 {
     public class ModifyTests
     {
+
+        [Fact]
+        public void Rename_LocalFlagSuccess()
+        {
+            Directory.CreateDirectory(@"C:\UnitTesting");
+
+            Directory.CreateDirectory(@"C:\UnitTesting\TestFile.txt");
+
+            var fp = new FilePath() { Local = @"C:\UnitTesting\" };
+
+            var blankClient = new FtpClient();
+
+            // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
+            var files = new Commands.Rename() { LocalName = "TestFile.txt", OldName = "NewTestFile.txt"  };
+
+            // EX: var cmd = new Commands.Rename() { LocalName = "OldName.txt", OldName = "NewName.txt"  };
+
+            Assert.Equal(0, Modify.Rename(blankClient, files, fp));
+
+            Assert.True(Directory.Exists(@"C:\UnitTesting\NewTestFile.txt"));
+
+            Directory.Delete(@"C:\UnitTesting\NewTestFile.txt");
+
+            Directory.Delete(@"C:\UnitTesting");
+        }
+
+        [Fact]
+        public void Rename_LocalNoFlagSuccess()
+        {
+            Directory.CreateDirectory(@"C:\UnitTesting");
+
+            Directory.CreateDirectory(@"C:\UnitTesting\TestFile.txt");
+
+            var fp = new FilePath() { Local = @"C:\UnitTesting\" };
+
+            var blankClient = new FtpClient();
+
+            var files = new Commands.Rename() { OldName = "TestFile.txt", NewName = "NewTestFile.txt" };
+
+            Assert.Equal(0, Modify.Rename(blankClient, files, fp));
+
+            Assert.True(Directory.Exists(@"C:\UnitTesting\NewTestFile.txt"));
+
+            Directory.Delete(@"C:\UnitTesting\NewTestFile.txt");
+
+            Directory.Delete(@"C:\UnitTesting");
+        }
+
         [Fact]
         public void Rename_InvalidOldName()
         {
