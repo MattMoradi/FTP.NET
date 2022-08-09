@@ -10,7 +10,7 @@ namespace Client.Tests
         [Fact]
         public void GetMultipleSuccess()
         {
-            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "CristianTS599", "117410PdxLu!"))
+            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "Agile410", "CS410Pdx!"))
             {
                 testClient.Connect();
 
@@ -32,7 +32,7 @@ namespace Client.Tests
         [Fact]
         public void GetMultiplePartialSuccess()
         {
-            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "CristianTS599", "117410PdxLu!"))
+            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "Agile410", "CS410Pdx!"))
             {
                 testClient.Connect();
 
@@ -53,7 +53,7 @@ namespace Client.Tests
 
         public void GetMultipleHostNotSpecified()
         {
-            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "CristianTS599", "117410PdxLu!"))
+            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "Agile410", "CS410Pdx!"))
             {
                 var remoteDirs = new List<string>() { @"\UnitTest\Build.txt" };
 

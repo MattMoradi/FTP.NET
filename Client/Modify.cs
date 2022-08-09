@@ -93,7 +93,7 @@ namespace Client
         /// <param name="client">ftpClient on which potential file to rename exists.</param>
         /// <param name="file">Rename command that specifies to rename local or remtoe file and file names to use.</param>
         /// <returns>0 if the file was renamed successfully, -1 if it failed.</returns>
-        public static int Rename(ref FtpClient client, Commands.Rename file, FilePath dirs)
+        public static int Rename(FtpClient client, Commands.Rename file, FilePath dirs)
         {
             int result = -1;
             var tempLoc = Directory.GetCurrentDirectory() + @"\Data";
@@ -119,6 +119,7 @@ namespace Client
                             if (client.MoveFile(dirs.Remote + file.RemoteName, dirs.Remote + file.NewName))
                             {
                                 Console.WriteLine("Remote Rename Successfull!");
+                                result = 0;
                             }
                             else
                             {
