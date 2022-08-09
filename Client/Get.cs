@@ -281,7 +281,10 @@ namespace Client
                 DirectoryInfo dir;
                 if (args.Length == 2)
 				{
-                    dir = new DirectoryInfo(args[1]);
+                    if (args[1] == "-l")
+                        dir = new DirectoryInfo(path.Local);
+                    else
+                        dir = new DirectoryInfo(args[1]);
                 }
                 else if (args.Length == 3)
 				{
