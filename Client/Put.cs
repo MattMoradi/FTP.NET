@@ -109,14 +109,31 @@ namespace Client
 			return 0;
 		}
 
-		public static int Create(ref FtpClient client, Commands.CreateDirectory directory)
+		public static int Create(ref FtpClient client, Commands.CreateDirectory directory, in Program.FilePath path)
 		{
 			if (client.IsAuthenticated)
 			{
-				if (client.DirectoryExists(directory.Name))
+				DirectoryInfo dir = new DirectoryInfo(path.Remote);
+
+				string fullpath = dir.FullName + directory.Name;
+				fullpath = fullpath.Remove(0, 2);
+
+				bool isDir = client.DirectoryExists(fullpath);
+
+				if (isDir)
 					Console.WriteLine("ERROR: Directory already exists\n");
 				else
-					client.CreateDirectoryAsync(directory.Name);
+
+					try
+					{
+						client.CreateDirectory(fullpath);
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine("The target directory name provided is invalid.");
+						Console.WriteLine("Error Message: " + ex.Message);
+						return -1;
+					}
 
 				return 0;
 			}
