@@ -1,8 +1,11 @@
 ﻿using Xunit;
+using FluentFTP;
+using System;
+
 
 namespace Client.Tests
 {
-    internal class GetTests
-    {
+    public class GetTests
+	{
     }
 }
