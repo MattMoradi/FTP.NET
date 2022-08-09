@@ -149,6 +149,7 @@ namespace Client
                     {
                         //Directory.Move is used for files
                         Directory.Move(dirs.Local + file.LocalName, dirs.Local + file.NewName);
+                        Console.WriteLine("Local Rename Successfull!");
                         result = 0;
                     }
                     else
@@ -178,10 +179,6 @@ namespace Client
                 Console.WriteLine(@"Expected: rename <OldName> <NewName>");
             }
 
-            if (result == 0)
-            {
-                Console.WriteLine("Local Rename Successfull!");
-            }
 
 
             return result;
