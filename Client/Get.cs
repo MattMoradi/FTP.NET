@@ -407,7 +407,7 @@ namespace Client
         }
 
         //method that changes the remote directory of the remote server
-        public static int ChangeRemoteDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
+        private static int ChangeRemoteDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
         {
             try
             {
@@ -448,7 +448,7 @@ namespace Client
         }
 
         //Method that changes the current local directory
-        public static int ChangeLocalDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
+        private static int ChangeLocalDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
         {
             string tempPath;
 
