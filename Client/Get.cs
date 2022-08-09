@@ -2,12 +2,13 @@
 using System.IO;
 using FluentFTP;
 using ShellProgressBar;
+using static Client.Program;
 
 namespace Client
 {
     public static class Get
     {
-        public static int File(ref FtpClient client, Commands.Get files)
+        public static int File(ref FtpClient client, Commands.Get files, FilePath path)
         {
             if (!client.IsAuthenticated)
             {
@@ -19,10 +20,10 @@ namespace Client
                 Console.WriteLine("\nDownloading File: " + files.Path);
 
             if (files.Files.Count() >= 1)
-                return MultipleFiles(client, files.Files, files.LocalPath);
+                return MultipleFiles(client, files.Files, files.LocalPath, path);
             else if (!string.IsNullOrEmpty(files.Directory))
             {
-                return RemoteDirectory(client, files.Directory, files.LocalPath);
+                return RemoteDirectory(client, files.Directory, path, files.LocalPath);
             }
             
             var options = new ProgressBarOptions
@@ -80,7 +81,7 @@ namespace Client
         /// <param name="remoteDirs">List of file directories.</param>
         /// <param name="localDir">Local directory to save files.</param>
         /// <returns>Number of files found or -1 if error occurs.</returns>
-        public static int MultipleFiles(FtpClient ftpClient, IEnumerable<string> remoteDirs, string localDir)
+        public static int MultipleFiles(FtpClient ftpClient, IEnumerable<string> remoteDirs, string localDir, FilePath paths)
         {
             try
             {
@@ -99,6 +100,7 @@ namespace Client
                     return -1;
                 }
 
+                var items = new List<string>();
                 // Check for incorrect file names
                 remoteDirs.ToList().ForEach(rd =>
                 {
@@ -106,6 +108,11 @@ namespace Client
                     {
                         Console.WriteLine($"Incorrect File Name: {rd}, Missing File Extension");
                         ++badFleNmeCount;
+                        items.Add(paths.Remote+rd);
+                    }
+                    else
+                    {
+                        items.Add(paths.Remote+rd);
                     }
                 });
 
@@ -122,7 +129,7 @@ namespace Client
                 localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
                 
                 // executes download of remoteDirectories to the local location.
-                var result = ftpClient.DownloadFiles(localDir, remoteDirs);
+                var result = ftpClient.DownloadFiles(localDir, items);
 
                 if ((result + badFleNmeCount) - remoteDirs.Count() == 0)
                     Console.WriteLine($"{result.ToString()} File(s) Downloaded. {badFleNmeCount} File(s) Failed for incorrect file name.");
@@ -163,7 +170,7 @@ namespace Client
         /// <param name="remoteDir">Remote directory to grab.</param>
         /// <param name="localDir">Local directory where items are saved.</param>
         /// <returns>Number of files downloaded from directory.</returns>
-        public static int RemoteDirectory(FtpClient ftpClient, string remoteDir, string localDir = "")
+        public static int RemoteDirectory(FtpClient ftpClient, string remoteDir, FilePath path, string localDir = "")
         {
             try
             {
@@ -192,13 +199,19 @@ namespace Client
                 localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
 
                 // execute directory download
-                var dir = ftpClient.DownloadDirectory(localDir, remoteDir, FtpFolderSyncMode.Update);
+                var dir = ftpClient.DownloadDirectory(localDir, path.Remote+remoteDir, FtpFolderSyncMode.Update);
 
                 // determine how many files were downloaded ignoring the skipped and overwritten files.
                 dir.ForEach(d => { if (d.IsDownload) ++result; });
                 
                 if (result > 0)
+                {
                     Console.WriteLine($"Directory downloaded to {localDir}.");
+                }
+                else
+                {
+                    Console.WriteLine("Error: Failed to Download directory");
+                }
 
                 // return number of files downloaded successfully
                 return result;
