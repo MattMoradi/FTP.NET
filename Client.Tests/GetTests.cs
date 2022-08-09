@@ -9,60 +9,88 @@ namespace Client.Tests
     public class GetTests
     {
         [Fact]
-        public void GetMultipleSuccess()
+        public void GetMultiple_HostNotSpecified()
         {
-            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "Agile410", "CS410Pdx!"))
-            {
-                testClient.Connect();
+            // non-client
+            FtpClient testClient = new FtpClient();
+            
+             var remoteDirs = new List<string>() { "Build.txt" };
 
-                var remoteDirs = new List<string>() { "Build.txt","Client.txt","NewFile.txt", "Solution.txt" };
+             var localDir = "ArbitraryDirectoryName";
 
-                var currentdir = Directory.GetCurrentDirectory();
+             var dirs = new FilePath() { Remote = @"\UnitTest\", Local = @"\" };
 
-                Directory.CreateDirectory(currentdir + @"\UnitTesting");
-
-                var localDir = $"{currentdir + @"UnitTesting"}";
-
-                var dirs = new FilePath() { Remote = @"\UnitTest\", Local= @"\" }; 
-
-                Assert.Equal(remoteDirs.Count, Get.MultipleFiles(testClient, remoteDirs, localDir, dirs));
-            }
+             Assert.Equal(-1, Get.MultipleFiles(testClient, remoteDirs, localDir, dirs));
         }
 
         [Fact]
-        public void GetMultiplePartialSuccess()
+        public void GetMultiple_InvalidLocalDirectory()
         {
-            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "Agile410", "CS410Pdx!"))
-            {
-                testClient.Connect();
-                
-                var remoteDirs = new List<string>() { "Build.txt","Fail1.txt","Fail2.txt","Solution.txt" };
+            var testClient = new FtpClient();
 
-                var currentdir = Directory.GetCurrentDirectory();
+            var remoteDir = new List<string>() { "Build.txt" };
 
-                Directory.CreateDirectory(currentdir + @"\UnitTesting");
+            var localDir = @"Arbitrary\Incorrect\Directory.txt";
 
-                var localDir = $"{currentdir + @"UnitTesting"}";
+            var dirs = new FilePath() { Local = @"\", Remote = @"\" };
 
-                var dirs = new FilePath() { Remote = @"\UnitTest\", Local = @"\" };
-
-                Assert.Equal((remoteDirs.Count - 2), Get.MultipleFiles(testClient, remoteDirs, localDir, dirs));
-            }
+            Assert.Equal(-1, Get.MultipleFiles(testClient, remoteDir, localDir, dirs));
         }
 
         [Fact]
-        public void GetMultipleHostNotSpecified()
+        public void GetMultiple_InvalidRemoteFileNameAll()
         {
-            using (FtpClient testClient = new FtpClient("ftp.drivehq.com", "Agile410", "CS410Pdx!"))
-            {
-                var remoteDirs = new List<string>() { "Build.txt" };
+            var testClient = new FtpClient();
 
-                var localDir = "ArbitraryDirectoryName";
+            var remoteDir = new List<string>() { "Buildtxt", "Hellotxt" };
 
-                var dirs = new FilePath() { Remote = @"\UnitTest\", Local = @"\" };
+            var localDir = @"Arbitrary\Directory";
 
-                Assert.Equal(-1, Get.MultipleFiles(testClient, remoteDirs, localDir, dirs));
-            }
+            var dirs = new FilePath() { Local = @"\", Remote = @"\" };
+
+            Assert.Equal(-1, Get.MultipleFiles(testClient, remoteDir, localDir, dirs));
+        }
+
+        [Fact]
+        public void GetDirectory_InvalidDirectory()
+        {
+            var testClient = new FtpClient();
+
+            var remoteDir = "RandomDirectory.txt";
+
+            var localDir = string.Empty;
+
+            var dirs = new FilePath() { Local = @"\", Remote = @"\" };
+
+            Assert.Equal(-1, Get.RemoteDirectory(testClient, remoteDir, dirs, localDir));
+        }
+
+        [Fact]
+        public void GetDirectory_InvalidLocalDirectory()
+        {
+            var testClient = new FtpClient();
+
+            var remoteDir = @"\Random\Directory";
+
+            var localDir = @"\Incorrect\Local\Directory.txt";
+
+            var dirs = new FilePath() { Local = @"\", Remote = @"\" };
+
+            Assert.Equal(-1, Get.RemoteDirectory(testClient, remoteDir, dirs, localDir));
+        }
+
+        [Fact]
+        public void GetDirectory_HostNotSpecidfied()
+        {
+            var testClient = new FtpClient();
+
+            var remoteDir = @"\Random\Directory";
+
+            var localDir = @"\Incorrect\Local\Directory";
+
+            var dirs = new FilePath() { Local = @"\", Remote = @"\" };
+
+            Assert.Equal(-1, Get.RemoteDirectory(testClient, remoteDir, dirs, localDir));
         }
     }
 }

@@ -12,30 +12,6 @@ namespace Client.Tests
     public class ModifyTests
     {
         [Fact]
-        public void Rename_Success()
-        {
-            using (var testClient = new FtpClient("ftp.drivehq.com", "Agile410", "CS410Pdx!"))
-            {
-                // client
-                testClient.Connect();
-
-                var cmd = new Commands.Rename() { OldName = @"ThisTest.txt", NewName = @"Conn.txt" };
-
-                var dir = new FilePath() { Remote = @"\UnitTest\" };
-
-                Assert.Equal(0, Modify.Rename(testClient, cmd, dir));
-
-                cmd = new Commands.Rename() { NewName = @"ThisTest.txt", OldName = @"Conn.txt" };
-
-                dir = new FilePath() { Remote = @"\UnitTest\" };
-
-                Modify.Rename(testClient, cmd, dir);
-
-                testClient.Disconnect();
-            }
-        }
-
-        [Fact]
         public void Rename_InvalidOldName()
         {
             // non-client
