@@ -62,6 +62,5 @@ namespace Client.Tests
                 Assert.Equal(-1, Get.MultipleFiles(testClient, remoteDirs, localDir));
             }
         }
-
     }
 }
