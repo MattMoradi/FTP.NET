@@ -3,6 +3,6 @@
 namespace Client.Tests
 {
     internal class GetTests
-    {
+	{
     }
 }
