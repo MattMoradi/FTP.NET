@@ -16,11 +16,22 @@ namespace Client
                 return -1;
             }
 
-            if (!string.IsNullOrEmpty(files.Path))
+            if (!string.IsNullOrEmpty(files.Path) && files?.Files?.Count() == 0)
                 Console.WriteLine("\nDownloading File: " + files.Path);
 
             if (files.Files.Count() >= 1)
-                return MultipleFiles(client, files.Files, files.LocalPath, path);
+            {
+                var toCollect = new List<string>();
+                var corrected = false;
+                if (!string.IsNullOrEmpty(files.Path))
+                {
+                    toCollect.Add(files.Path);
+                    files.Files.ToList().ForEach(file => toCollect.Add(file));
+                    corrected = true;
+                }
+
+                return MultipleFiles(client, corrected ? toCollect : files.Files, files.LocalPath, path);
+            }
             else if (!string.IsNullOrEmpty(files.Directory))
             {
                 return RemoteDirectory(client, files.Directory, path, files.LocalPath);
@@ -85,18 +96,14 @@ namespace Client
         {
             try
             {
+                var result = 0;
                 var badFleNmeCount = 0;
-                // Check for no Client connection
-                if (!ftpClient.IsAuthenticated)
-                {
-                    Console.WriteLine("Error Host Not Specified. Try \"Connect\" Command");
-                    return -1;
-                }
 
                 // Verify local directory is a directory
                 if (!string.IsNullOrEmpty(localDir) && localDir.Contains('.'))
                 {
-                    Console.WriteLine("local directory must be a directory not a file path. Try Again");
+                    Console.WriteLine("Error: local directory must be a directory not a file path. Try Again");
+                    Console.WriteLine("Expected: get -m <file1.txt> <file2.txt> ... -l <LocalDirectory>");
                     return -1;
                 }
 
@@ -106,7 +113,8 @@ namespace Client
                 {
                     if (!rd.Contains('.') || rd.Last().Equals('.'))
                     {
-                        Console.WriteLine($"Incorrect File Name: {rd}, Missing File Extension");
+                        Console.WriteLine($"Error: Incorrect File Name: {rd}, Missing File Extension");
+                        Console.WriteLine("Expected: <filename.txt>");
                         ++badFleNmeCount;
                         items.Add(paths.Remote+rd);
                     }
@@ -119,20 +127,29 @@ namespace Client
                 // if all file names are bad display error and return
                 if (badFleNmeCount == remoteDirs.Count())
                 {
-                    Console.WriteLine("Incorrect Remote File Names. Try again.");
+                    Console.WriteLine("Error: Incorrect Remote File Names. Try again.");
                     return -1;
                 }
 
-                Console.WriteLine("Downloading Files...\n");
+                if (ftpClient.IsAuthenticated)
+                {
+                    Console.WriteLine("Downloading Files...\n");
 
-                // check if local was provided or not. if not use default.
-                localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
-                
-                // executes download of remoteDirectories to the local location.
-                var result = ftpClient.DownloadFiles(localDir, items);
+                    // check if local was provided or not. if not use default.
+                    localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
+
+                    // executes download of remoteDirectories to the local location.
+                    result = ftpClient.DownloadFiles(localDir, items);
+
+                }
+                else
+                {
+                    Console.WriteLine("Error: Host not specified try the \"connect\" command.");
+                    return -1;
+                }
 
                 if ((result + badFleNmeCount) - remoteDirs.Count() == 0)
-                    Console.WriteLine($"{result.ToString()} File(s) Downloaded. {badFleNmeCount} File(s) Failed for incorrect file name.");
+                    Console.WriteLine($"{result} File(s) Downloaded. {badFleNmeCount} File(s) Failed for incorrect file name.");
 
                 // let user know where files were downloaded incase local dir not provided
                 if (result > 0)
@@ -141,24 +158,27 @@ namespace Client
                 }
                 else
                 {
-                    Console.WriteLine("Failed to Download Files. Try again.");
+                    Console.WriteLine("Error: Failed to Download Files. Try again.");
                 }
                 // # files downloaded
                 return result;
             }
             catch(ArgumentException aExc)
             {
-                Console.WriteLine($"Incorrect Parameters: Auto Exception Message {aExc.Message}");
+                Console.WriteLine($"Error: Incorrect Parameters: Auto Exception Message {aExc.Message}");
+                Console.WriteLine("Expected: get -m <filename.txt> <filename1.txt> ...");
                 return -1;
             }
             catch(FtpException ftpExc)
             {
                 Console.WriteLine($"FtpClient unexpected error, download failed. Auto Exception Msg: {ftpExc.Message}");
+                Console.WriteLine("Expected: get -m <filename.txt> <filename1.txt> ...");
                 return -1;
             }
             catch(Exception exc)
             {
                 Console.WriteLine($"Failed to retrieve multiple files. Auto Exception Msg: {exc.Message}");
+                Console.WriteLine("Expected: get -m <filename.txt> <filename1.txt> ...");
                 return -1;
             }
         }
@@ -174,12 +194,6 @@ namespace Client
         {
             try
             {
-                if (!ftpClient.IsConnected)
-                {
-                    Console.WriteLine("FTP Host Not Specified, Try The \"Connect\" Command");
-                    return -1;
-                }
-
                 if (string.IsNullOrEmpty(remoteDir) || remoteDir.Contains('.'))
                 {
                     Console.WriteLine($"Incorrect remote directory name value: {remoteDir}. Try again.");
@@ -192,17 +206,26 @@ namespace Client
                     return -1;
                 }
 
-                Console.WriteLine($"Downloading Directory: {remoteDir}...");
                 var result = 0;
 
-                // Use the user indicated directory or evironement directory if not specified
-                localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
+                if (ftpClient.IsAuthenticated)
+                {
+                    Console.WriteLine($"Downloading Directory: {remoteDir}...");
 
-                // execute directory download
-                var dir = ftpClient.DownloadDirectory(localDir, path.Remote+remoteDir, FtpFolderSyncMode.Update);
+                    // Use the user indicated directory or evironement directory if not specified
+                    localDir = string.IsNullOrEmpty(localDir) ? Environment.CurrentDirectory : localDir;
 
-                // determine how many files were downloaded ignoring the skipped and overwritten files.
-                dir.ForEach(d => { if (d.IsDownload) ++result; });
+                    // execute directory download
+                    var dir = ftpClient.DownloadDirectory(localDir, path.Remote + remoteDir, FtpFolderSyncMode.Update);
+                
+                    // determine how many files were downloaded ignoring the skipped and overwritten files.
+                    dir.ForEach(d => { if (d.IsDownload) ++result; });
+                }
+                else
+                {
+                    Console.WriteLine("Error: Host not Specified. Try the \"connect\" command.");
+                    return -1;
+                }
                 
                 if (result > 0)
                 {
