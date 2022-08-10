@@ -185,7 +185,7 @@ namespace Client
 
 			//ALL CHECKS SHOULD BE PERFORMED AT THIS POINT SO OK TO GO FORWARD WITH THE DL/UL/DEL
 
-			string localtempdir = "C:\\fluentftp_tempdir";
+			string localtempdir = Directory.GetCurrentDirectory() + "Temp";
 
 			client.DownloadDirectory(localtempdir, sourcedir, FtpFolderSyncMode.Update);
 
