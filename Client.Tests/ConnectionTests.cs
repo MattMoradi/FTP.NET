@@ -52,7 +52,7 @@ namespace Client.Tests
         }
 
         [Fact]
-        public void SaveCredentialsTest()
+        public void Save_Credentials_Success()
         {
             // randomized credentials
             client.Host = "testHost";
