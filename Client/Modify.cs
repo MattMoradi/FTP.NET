@@ -6,20 +6,26 @@ namespace Client
 {
     public static class Modify
     {
-        public static int Delete(ref FtpClient client, Commands.Delete file)
+        public static int Delete(ref FtpClient client, Commands.Delete file, in Program.FilePath path)
         {
             if (client.IsAuthenticated)
             {
-                bool isDir = client.DirectoryExists(file.File);
-                bool isFile = client.FileExists(file.File);
+
+                DirectoryInfo dir = new DirectoryInfo(path.Remote);
+
+                string fullpath = dir.FullName + file.File;
+                fullpath = fullpath.Remove(0, 2);
+
+                bool isDir = client.DirectoryExists(fullpath);
+                bool isFile = client.FileExists(fullpath);
 
                 if (isDir)
                 {
-                    client.DeleteDirectory(file.File);
+                    client.DeleteDirectory(fullpath);
                 }
                 else if (isFile)
                 {
-                    client.DeleteFile(file.File);
+                    client.DeleteFile(fullpath);
                 }
                 else
                 {
@@ -27,6 +33,7 @@ namespace Client
                 }
 
                 return 0;
+
             }
             else
             {

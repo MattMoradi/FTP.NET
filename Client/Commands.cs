@@ -91,9 +91,6 @@ namespace Client
             public IEnumerable<string>? Directories { get; set; }
         }
 
-        [Verb("save", HelpText = "Save connection information")]
-        internal class Save { }
-
         [Verb("rename", HelpText = "Rename file (Note: Endpoint Must Support CHMOD Operations else \"Unknown CHMOD...\" Error May Appear.)")]
         public class Rename
         {
