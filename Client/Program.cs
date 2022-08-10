@@ -61,7 +61,7 @@ namespace Client
                 (Commands.Put opts) => Put.File(ref client, opts, in path),
                 (Commands.CreateDirectory opts) => Put.Create(ref client, opts, in path),
                 (Commands.Delete opts) => Modify.Delete(ref client, opts, in path),
-                (Commands.Permissions opts) => Modify.Permissions(ref client, opts),
+                (Commands.Permissions opts) => Modify.Permissions(ref client, opts, path),
                 (Commands.Copy opts) => Put.Copy(ref client, opts),
                 (Commands.ChangeDirectory opts) => Get.ChangeDirectory(in client, ref path, in args),
                 (Commands.Rename opts) => Modify.Rename(ref client, opts, path), errs => 1);
