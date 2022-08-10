@@ -16,48 +16,47 @@ namespace Client.Tests
         [Fact]
         public void Rename_LocalFlagSuccess()
         {
-            Directory.CreateDirectory(@"C:\UnitTesting");
+            Directory.CreateDirectory($@"{Directory.GetCurrentDirectory}UnitTesting");
 
-            Directory.CreateDirectory(@"C:\UnitTesting\TestFile.txt");
+            Directory.CreateDirectory(($@"{Directory.GetCurrentDirectory}UnitTesting\TestFile.txt"));
 
-            var fp = new FilePath() { Local = @"C:\UnitTesting\" };
+            var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory}UnitTesting\" };
 
             var blankClient = new FtpClient();
 
             // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
             var files = new Commands.Rename() { LocalName = "TestFile.txt", OldName = "NewTestFile.txt"  };
 
-            // EX: var cmd = new Commands.Rename() { LocalName = "OldName.txt", OldName = "NewName.txt"  };
-
             Assert.Equal(0, Modify.Rename(blankClient, files, fp));
 
-            Assert.True(Directory.Exists(@"C:\UnitTesting\NewTestFile.txt"));
+            Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
 
-            Directory.Delete(@"C:\UnitTesting\NewTestFile.txt");
+            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt");
 
-            Directory.Delete(@"C:\UnitTesting");
+            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting");
         }
 
         [Fact]
         public void Rename_LocalNoFlagSuccess()
         {
-            Directory.CreateDirectory(@"C:\UnitTesting");
+            Directory.CreateDirectory($@"{Directory.GetCurrentDirectory}UnitTesting");
 
-            Directory.CreateDirectory(@"C:\UnitTesting\TestFile.txt");
+            Directory.CreateDirectory(($@"{Directory.GetCurrentDirectory}UnitTesting\TestFile.txt"));
 
-            var fp = new FilePath() { Local = @"C:\UnitTesting\" };
+            var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory}UnitTesting\" };
 
             var blankClient = new FtpClient();
 
+            // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
             var files = new Commands.Rename() { OldName = "TestFile.txt", NewName = "NewTestFile.txt" };
 
             Assert.Equal(0, Modify.Rename(blankClient, files, fp));
 
-            Assert.True(Directory.Exists(@"C:\UnitTesting\NewTestFile.txt"));
+            Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
 
-            Directory.Delete(@"C:\UnitTesting\NewTestFile.txt");
+            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt");
 
-            Directory.Delete(@"C:\UnitTesting");
+            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting");
         }
 
         [Fact]
