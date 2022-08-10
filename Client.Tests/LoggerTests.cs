@@ -11,7 +11,7 @@ namespace Client.Tests
         {
             ILogger logger = A.Fake<ILogger>();
             string[] args = { "ls", "-l" };
-            FtpClient client = new();
+            FtpClient client = A.Fake<FtpClient>();
             Program.LogInput(logger, args, in client);
             A.CallTo(() => logger.Log(args, client)).MustHaveHappened();
         }
