@@ -185,7 +185,7 @@ namespace Client
 
 			//ALL CHECKS SHOULD BE PERFORMED AT THIS POINT SO OK TO GO FORWARD WITH THE DL/UL/DEL
 
-			string localtempdir = Directory.GetCurrentDirectory() + "Temp";
+			string localtempdir = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "Temp";
 
 			client.DownloadDirectory(localtempdir, sourcedir, FtpFolderSyncMode.Update);
 
