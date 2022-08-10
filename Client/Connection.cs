@@ -38,7 +38,7 @@ namespace Client
 
                 try
                 {
-                    client.AutoConnect();
+                    client.Connect();
                     firstAuth = true;
                 }
                 catch (Exception ex)
