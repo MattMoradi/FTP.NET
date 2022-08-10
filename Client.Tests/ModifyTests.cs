@@ -29,7 +29,7 @@ namespace Client.Tests
             renCmd.LocalName = "TestFile.txt";
             renCmd.OldName = "NewTestFile.txt";
 
-            Assert.Equal(0, Modify.Rename(testClient, renCmd, fp));
+            Assert.Equal(0, Modify.Rename(ref testClient, renCmd, fp));
 
             Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
 
@@ -52,7 +52,7 @@ namespace Client.Tests
             renCmd.OldName = "TestFile.txt";
             renCmd.NewName = "NewTestFile.txt";
 
-            Assert.Equal(0, Modify.Rename(testClient, renCmd, fp));
+            Assert.Equal(0, Modify.Rename(ref testClient, renCmd, fp));
 
             Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
 
@@ -71,7 +71,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTest\" };
 
-            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Client.Tests
             
             var dir = new FilePath() { Remote = @"\UnitTest\" };
             
-            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
             
             testClient.Disconnect();
         }
@@ -99,7 +99,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTest\" };
 
-            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
 
         }
 
@@ -113,7 +113,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTest.txt\" };
 
-            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
         }
 
         [Fact]
@@ -127,7 +127,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
-            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
         }
 
         [Fact]
@@ -141,7 +141,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
-            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
-            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
         }
 
 
