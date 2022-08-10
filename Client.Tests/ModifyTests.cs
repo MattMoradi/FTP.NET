@@ -1,4 +1,5 @@
-﻿using FluentFTP;
+﻿using FakeItEasy;
+using FluentFTP;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,7 @@ namespace Client.Tests
 {
     public class ModifyTests
     {
+        FtpClient testClient = A.Fake<FtpClient>();
 
         [Fact]
         public void Rename_LocalFlagSuccess()
@@ -22,12 +24,12 @@ namespace Client.Tests
 
             var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory}UnitTesting\" };
 
-            var blankClient = new FtpClient();
-
             // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
-            var files = new Commands.Rename() { LocalName = "TestFile.txt", OldName = "NewTestFile.txt"  };
+            var renCmd = A.Fake<Commands.Rename>(); 
+            renCmd.LocalName = "TestFile.txt";
+            renCmd.OldName = "NewTestFile.txt";
 
-            Assert.Equal(0, Modify.Rename(blankClient, files, fp));
+            Assert.Equal(0, Modify.Rename(testClient, renCmd, fp));
 
             Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
 
@@ -45,12 +47,12 @@ namespace Client.Tests
 
             var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory}UnitTesting\" };
 
-            var blankClient = new FtpClient();
-
             // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
-            var files = new Commands.Rename() { OldName = "TestFile.txt", NewName = "NewTestFile.txt" };
+            var renCmd = A.Fake<Commands.Rename>();
+            renCmd.OldName = "TestFile.txt";
+            renCmd.NewName = "NewTestFile.txt";
 
-            Assert.Equal(0, Modify.Rename(blankClient, files, fp));
+            Assert.Equal(0, Modify.Rename(testClient, renCmd, fp));
 
             Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
 
@@ -63,9 +65,9 @@ namespace Client.Tests
         public void Rename_InvalidOldName()
         {
             // non-client
-            var testClient = new FtpClient();
-            
-            var cmd = new Commands.Rename() { OldName = @"ThisTesttxt", NewName = @"Conntxt" };
+            var cmd = A.Fake<Commands.Rename>();
+            cmd.OldName = @"ThisTesttxt";
+            cmd.NewName = @"Conntxt";
 
             var dir = new FilePath() { Remote = @"\UnitTest\" };
 
@@ -76,9 +78,9 @@ namespace Client.Tests
         public void Rename_InvalidNewName()
         {
             // non client
-            var testClient = new FtpClient();
-
-            var cmd = new Commands.Rename() { OldName = @"ThisTest.txt", NewName = @"Conntxt" };
+            var cmd = A.Fake<Commands.Rename>();
+            cmd.OldName = @"ThisTest.txt";
+            cmd.NewName = @"Conntxt";
             
             var dir = new FilePath() { Remote = @"\UnitTest\" };
             
@@ -91,9 +93,9 @@ namespace Client.Tests
         public void Rename_HostNotSpecified()
         {
             // non client
-            var testClient = new FtpClient();
-            
-            var cmd = new Commands.Rename() { OldName = @"ThisTest.txt", NewName = @"Conntxt" };
+            var cmd = A.Fake<Commands.Rename>();
+            cmd.OldName = @"ThisTest.txt";
+            cmd.NewName = @"Conntxt";
 
             var dir = new FilePath() { Remote = @"\UnitTest\" };
 
@@ -105,9 +107,9 @@ namespace Client.Tests
         public void Rename_InvalidDirectory()
         {
             // non-client
-            var testClient = new FtpClient();
-            
-            var cmd = new Commands.Rename() { OldName = @"ThisTest.txt", NewName = @"Conntxt" };
+            var cmd = A.Fake<Commands.Rename>();
+            cmd.OldName = @"ThisTest.txt";
+            cmd.NewName = @"Conntxt";
 
             var dir = new FilePath() { Remote = @"\UnitTest.txt\" };
 
@@ -118,9 +120,10 @@ namespace Client.Tests
         public void Rename_InvalidLocalFlagNewName()
         {
             // Non-Client
-            var testClient = new FtpClient();
-            
-            var cmd = new Commands.Rename() { LocalName = @"ThisTest.txt", NewName = @"Conntxt", OldName = @"Conntxt" };
+            var cmd = A.Fake<Commands.Rename>();
+            cmd.LocalName = @"ThisTest.txt";
+            cmd.NewName = @"Conntxt";
+            cmd.OldName = @"Conntxt";
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
@@ -131,26 +134,28 @@ namespace Client.Tests
         public void Rename_InvalidLocalFileName()
         {
             // Non-Client
-            var testClient = new FtpClient();
-                var cmd = new Commands.Rename() { LocalName = @"ThisTesttxt", NewName = @"Conn.txt", OldName = @"Conn.txt" };
+            var cmd = A.Fake<Commands.Rename>();
+            cmd.LocalName = @"ThisTesttxt";
+            cmd.NewName = @"Conn.txt";
+            cmd.OldName = @"Conn.txt";
 
-                var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
+            var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
-                Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
         }
 
         [Fact]
         public void Rename_InvalidRemoteFlagNewName()
         {
             // non-client
-            var testClient = new FtpClient();
-
-            var cmd = new Commands.Rename() { RemoteName = @"ThisTesttxt", NewName = @"Conn.txt", OldName = @"Conn.txt" };
+            var cmd = A.Fake<Commands.Rename>();
+            cmd.RemoteName = @"ThisTesttxt";
+            cmd.NewName = @"Conn.txt";
+            cmd.OldName = @"Conn.txt";
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
             Assert.Equal(-1, Modify.Rename(testClient, cmd, dir));
-
         }
 
 
