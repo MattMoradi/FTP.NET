@@ -4,7 +4,7 @@ Name "FTP.NET Client"
 
 OutFile "FTP-Client-Installer.exe"
 
-InstallDir "$PROGRAMFILES\FTP Client"
+InstallDir "$APPDATA\FTP.NET"
 
 LicenseData "LICENSE"
 
