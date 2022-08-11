@@ -15,33 +15,6 @@ namespace Client.Tests
     public class ModifyTests
     {
         [Fact]
-        public void Rename_LocalFlagSuccess()
-        {
-            Directory.CreateDirectory(@"UnitTesting");
-
-            var fstream = File.Create(@"UnitTesting\TestFile.txt");
-
-            fstream.Close();
-
-            var delete = Directory.GetCurrentDirectory();
-
-            var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory()}\UnitTesting\" };
-
-            // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
-            var renCmd = A.Fake<Commands.Rename>(); 
-            renCmd.LocalName = "TestFile.txt";
-            renCmd.OldName = "NewTestFile.txt";
-
-            Assert.Equal(0, Modify.Rename(ref client, renCmd, fp));
-
-            Assert.True(File.Exists(@"UnitTesting\NewTestFile.txt"));
-
-            File.Delete(@"UnitTesting\NewTestFile.txt");
-
-            Directory.Delete(@"UnitTesting");
-        }
-
-        [Fact]
         public void Rename_InvalidOldName()
         {
             // non-client
