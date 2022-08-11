@@ -211,7 +211,7 @@ namespace Client
         }
 
         //Wrapper to check which directory should be displayed to the console
-        public static int List(ref FtpClient client, Commands.List directory, in Program.FilePath path, in string[] args)
+        public static int List(ref FtpClient client, in Program.FilePath path, in string[] args)
         {
             if ((!args.Contains("-r")) && (!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
                 return ListLocalDirectory(in path, in args);
@@ -220,7 +220,7 @@ namespace Client
         }
 
         //Lists the current directory the user is in on the remote server
-        private static int ListRemoteDirectory(ref FtpClient client, in Program.FilePath path, in string[] args)
+        public static int ListRemoteDirectory(ref FtpClient client, in Program.FilePath path, in string[] args)
         {
             try
             {
@@ -352,7 +352,7 @@ namespace Client
                 if (args.Contains(".."))
                     return GoToPrevDirectory(ref path, in args, in client);
                 if ((!args.Contains("-r")) && (!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
-                    return ChangeLocalDirectory(client, ref path, in args, index);
+                    return ChangeLocalDirectory(ref path, in args, index);
                 else
                     return ChangeRemoteDirectory(client, ref path, in args, index);
             }
@@ -368,33 +368,14 @@ namespace Client
 
         //Removes the current directory the user is in from the file path.
         //If the user is at the root directory, nothing is removed.
-        private static int GoToPrevDirectory(ref Program.FilePath path, in string[] args, in FtpClient client)
+        public static int GoToPrevDirectory(ref Program.FilePath path, in string[] args, in FtpClient client)
         {
             try
             {
                 if ((!args.Contains("-r")) && (!args.Contains("-l") && !client.IsAuthenticated) || args.Contains("-l"))
-                {
-                    if (IsAtRootDirectory(path.Local))
-                        return -1;
-                    string temp = path.Local.Substring(path.Local.Substring(0, path.Local.LastIndexOf("/")).LastIndexOf("/") + 1);
-                    path.Local = path.Local.Remove(path.Local.LastIndexOf(temp));
-                    Console.WriteLine(path.Local + "\n");
-                    return 0;
-                }
+                    return GoToPrevLocalDirectory(ref path);
                 else
-                {
-                    if (!client.IsAuthenticated)
-                    {
-                        Console.WriteLine("Must be connected to a remote server to change directory!");
-                        return -1;
-                    }
-                    if (IsAtRootDirectory(path.Remote))
-                        return -1;
-                    string temp = path.Remote.Substring(path.Remote.Substring(0, path.Remote.LastIndexOf("/")).LastIndexOf("/") + 1);
-                    path.Remote = path.Remote.Remove(path.Remote.LastIndexOf(temp));
-                    Console.WriteLine(path.Remote + "\n");
-                    return 0;
-                }
+                    return GoToPrevRemoteDirectory(ref path, in client);
             }
             catch (Exception ex)
             {
@@ -406,8 +387,32 @@ namespace Client
             }
         }
 
+        public static int GoToPrevLocalDirectory(ref Program.FilePath path)
+        {
+            if (IsAtRootDirectory(path.Local))
+                return -1;
+            string temp = path.Local.Substring(path.Local.Substring(0, path.Local.LastIndexOf("/")).LastIndexOf("/") + 1);
+            path.Local = path.Local.Remove(path.Local.LastIndexOf(temp));
+            Console.WriteLine(path.Local + "\n");
+            return 0;
+        }
+
+        public static int GoToPrevRemoteDirectory(ref Program.FilePath path, in FtpClient client)
+        {
+            if (!client.IsAuthenticated)
+            {
+                Console.WriteLine("Must be connected to a remote server to change directory!");
+                return -1;
+            }
+            if (IsAtRootDirectory(path.Remote))
+                return -1;
+            string temp = path.Remote.Substring(path.Remote.Substring(0, path.Remote.LastIndexOf("/")).LastIndexOf("/") + 1);
+            path.Remote = path.Remote.Remove(path.Remote.LastIndexOf(temp));
+            Console.WriteLine(path.Remote + "\n");
+            return 0;
+        }
         //method that changes the remote directory of the remote server
-        private static int ChangeRemoteDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
+        public static int ChangeRemoteDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
         {
             try
             {
@@ -419,6 +424,8 @@ namespace Client
                 string tempPath = path.Remote;
                 //find the number of args provided and where the
                 //directory that is wanting to be displayed is located
+                if (args[args.Length - 1] == "")
+                    return -1;
                 if (index + 3 == args.Length)//passes when the users provides -r flag
                     tempPath += args[2] + "/";
                 else if (index + 2 == args.Length)//passes when the user does not provide -r flag
@@ -436,6 +443,7 @@ namespace Client
                     Console.WriteLine(path.Remote + "\n");
                     return 0;
                 }
+
             }
             catch (Exception ex)
             {
@@ -448,12 +456,13 @@ namespace Client
         }
 
         //Method that changes the current local directory
-        private static int ChangeLocalDirectory(in FtpClient client, ref Program.FilePath path, in string[] args, int index)
+        public static int ChangeLocalDirectory(ref Program.FilePath path, in string[] args, int index)
         {
             string tempPath;
-
+            if (args[args.Length-1] == "")
+                return -1;
             // For absolute path ex c:\dev
-            if (args.Count() == 3 && args[2][1].Equals(':'))
+            if (args.Count() == 3 && args[2].Equals(':'))
 			{
                 tempPath = args[2];
 			}
@@ -487,7 +496,7 @@ namespace Client
         }
         //check if current path is at root by counting number of '/'
         //characters that occur in the path string
-        private static bool IsAtRootDirectory(in string path)
+        public static bool IsAtRootDirectory(in string path)
         {
             if (path.Count(f => f == '/') <= 1)
                 return true;

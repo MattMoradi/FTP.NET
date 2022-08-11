@@ -1,8 +1,9 @@
-﻿namespace Client
+﻿using FluentFTP;
+
+namespace Client
 {
     public interface ILogger
     {
-        void Log(string[] message);
-        string CreateDirectory(string path);
+        void Log(string[] message, in FtpClient client);
     }
 }
