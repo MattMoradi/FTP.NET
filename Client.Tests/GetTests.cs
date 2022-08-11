@@ -28,7 +28,7 @@ namespace Client.Tests
         public void Get_Go_To_Prev_Local_Directory_Successs()
         {
             Program.FilePath path = new();
-            path.SetInitalPaths("/OneDirAhead/", "/");
+            path.SetInitalPaths("/tempDir/", "/");
             Assert.Equal(0, Get.GoToPrevLocalDirectory(ref path));
             Assert.Equal("/", path.Local);
         }
