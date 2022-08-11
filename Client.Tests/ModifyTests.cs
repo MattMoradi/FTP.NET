@@ -18,11 +18,15 @@ namespace Client.Tests
         [Fact]
         public void Rename_LocalFlagSuccess()
         {
-            Directory.CreateDirectory($@"{Directory.GetCurrentDirectory}UnitTesting");
+            Directory.CreateDirectory(@"UnitTesting");
 
-            Directory.CreateDirectory(($@"{Directory.GetCurrentDirectory}UnitTesting\TestFile.txt"));
+            var fstream = File.Create(@"UnitTesting\TestFile.txt");
 
-            var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory}UnitTesting\" };
+            fstream.Close();
+
+            var delete = Directory.GetCurrentDirectory();
+
+            var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory()}\UnitTesting\" };
 
             // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
             var renCmd = A.Fake<Commands.Rename>(); 
@@ -31,21 +35,25 @@ namespace Client.Tests
 
             Assert.Equal(0, Modify.Rename(ref testClient, renCmd, fp));
 
-            Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
+            Assert.True(File.Exists(@"UnitTesting\NewTestFile.txt"));
 
-            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt");
+            File.Delete(@"UnitTesting\NewTestFile.txt");
 
-            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting");
+            Directory.Delete(@"UnitTesting");
         }
 
         [Fact]
         public void Rename_LocalNoFlagSuccess()
         {
-            Directory.CreateDirectory($@"{Directory.GetCurrentDirectory}UnitTesting");
+            Directory.CreateDirectory(@"UnitTesting");
 
-            Directory.CreateDirectory(($@"{Directory.GetCurrentDirectory}UnitTesting\TestFile.txt"));
+            var fstream = File.Create(@"UnitTesting\TestFile.txt");
 
-            var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory}UnitTesting\" };
+            fstream.Close();
+
+            var delete = Directory.GetCurrentDirectory();
+
+            var fp = new FilePath() { Local = $@"{Directory.GetCurrentDirectory()}\UnitTesting\" };
 
             // a little backwards due to needing to support both rename <oldname> <newname> and rename -l <oldName> <newname>
             var renCmd = A.Fake<Commands.Rename>();
@@ -54,11 +62,11 @@ namespace Client.Tests
 
             Assert.Equal(0, Modify.Rename(ref testClient, renCmd, fp));
 
-            Assert.True(Directory.Exists($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt"));
+            Assert.True(File.Exists(@"UnitTesting\NewTestFile.txt"));
 
-            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting\NewTestFile.txt");
+            File.Delete(@"UnitTesting\NewTestFile.txt");
 
-            Directory.Delete($@"{Directory.GetCurrentDirectory}UnitTesting");
+            Directory.Delete(@"UnitTesting");
         }
 
         [Fact]
@@ -157,7 +165,5 @@ namespace Client.Tests
 
             Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
         }
-
-
     }
 }
