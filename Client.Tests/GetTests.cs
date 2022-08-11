@@ -1,6 +1,7 @@
 ﻿using Xunit;
 using FluentFTP;
 using FakeItEasy;
+using System.IO;
 
 namespace Client.Tests
 {
@@ -31,17 +32,6 @@ namespace Client.Tests
             path.SetInitalPaths("/tempDir/", "/");
             Assert.Equal(0, Get.GoToPrevLocalDirectory(ref path));
             Assert.Equal("/", path.Local);
-        }
-
-        [Fact]
-        public void Get_Change_Local_Directory_Success()
-        {
-            Program.FilePath path = new();
-            path.SetInitalPaths("./", "/");
-            int index = 0;
-            string[] args = { "cd", "-l", "Users" };
-            Assert.Equal(0, Get.ChangeLocalDirectory(ref path, in args, index));
-            Assert.Equal("./Users/", path.Local);
         }
 
         [Fact]
