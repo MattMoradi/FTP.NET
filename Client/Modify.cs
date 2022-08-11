@@ -49,7 +49,7 @@ namespace Client
         /// <param name="file">Permission levels and file path</param>
         /// <returns>0 if successful else -1.</returns>
         /// <remarks>Only works on unix platforms accepting CHMOD operations</remarks>
-        public static int Permissions(ref FtpClient client, Commands.Permissions file)
+        public static int Permissions(ref FtpClient client, Commands.Permissions file, FilePath dirs)
         {
             
             int result = -1;
@@ -75,7 +75,7 @@ namespace Client
                 }
 
                 // Invoke library method to execute permission change.
-                client.SetFilePermissions(file.FilePath, ((file.Owner * 100) + (file.Group * 10) + file.Others));
+                client.SetFilePermissions(dirs.Remote+file.FilePath, ((file.Owner * 100) + (file.Group * 10) + file.Others));
                 
                 result = 0;
             }
@@ -126,6 +126,7 @@ namespace Client
                             if (client.MoveFile(dirs.Remote + file.RemoteName, dirs.Remote + file.NewName))
                             {
                                 Console.WriteLine("Remote Rename Successfull!");
+                                result = 0;
                             }
                             else
                             {
@@ -155,6 +156,7 @@ namespace Client
                     {
                         //Directory.Move is used for files
                         Directory.Move(dirs.Local + file.LocalName, dirs.Local + file.NewName);
+                        Console.WriteLine("Local Rename Successfull!");
                         result = 0;
                     }
                     else
@@ -184,10 +186,6 @@ namespace Client
                 Console.WriteLine(@"Expected: rename <OldName> <NewName>");
             }
 
-            if (result == 0)
-            {
-                Console.WriteLine("Local Rename Successfull!");
-            }
 
 
             return result;
