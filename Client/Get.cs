@@ -424,6 +424,8 @@ namespace Client
                 string tempPath = path.Remote;
                 //find the number of args provided and where the
                 //directory that is wanting to be displayed is located
+                if (args[args.Length - 1] == "")
+                    return -1;
                 if (index + 3 == args.Length)//passes when the users provides -r flag
                     tempPath += args[2] + "/";
                 else if (index + 2 == args.Length)//passes when the user does not provide -r flag
@@ -457,9 +459,10 @@ namespace Client
         public static int ChangeLocalDirectory(ref Program.FilePath path, in string[] args, int index)
         {
             string tempPath;
-
+            if (args[args.Length-1] == "")
+                return -1;
             // For absolute path ex c:\dev
-            if (args.Count() == 3 && args[2][1].Equals(':'))
+            if (args.Count() == 3 && args[2].Equals(':'))
 			{
                 tempPath = args[2];
 			}
