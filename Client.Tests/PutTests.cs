@@ -54,6 +54,23 @@ namespace Client.Tests
 		// Multiple Files Success
 		// Permission Errors
 
+		[Fact]
+		public void Create_Remote_Directory_Client_Not_Authenticated()
+		{
+			FtpClient client = A.Fake<FtpClient>();
+			Commands.CreateDirectory directory = new();
+			Program.FilePath path = new();
+			path.SetInitalPaths("/", "/");
+			Assert.Equal(-1, Put.Create(ref client, directory, in path));
+		}
+
+		[Fact]
+		public void Copy_Remote_Directory_Client_Not_Authenticated()
+		{
+			FtpClient client = A.Fake<FtpClient>();
+			Commands.Copy file = new();
+			Assert.Equal(-1, Put.Copy(ref client, file));
+		}
 
 	}
 }
