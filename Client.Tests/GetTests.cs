@@ -13,6 +13,14 @@ namespace Client.Tests
         FtpClient testClient = A.Fake<FtpClient>();
 
         [Fact]
+        public void Get_File_No_Connection()
+        {
+            Commands.Get file = A.Fake<Commands.Get>();
+            var dirs = new FilePath();
+            Assert.Equal(-1, Get.File(ref testClient, file, dirs));
+        }
+
+        [Fact]
         public void GetMultiple_HostNotSpecified()
         {
             // non-client
