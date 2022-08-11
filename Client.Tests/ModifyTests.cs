@@ -14,8 +14,6 @@ namespace Client.Tests
 {
     public class ModifyTests
     {
-        FtpClient testClient = A.Fake<FtpClient>();
-
         [Fact]
         public void Rename_LocalFlagSuccess()
         {
@@ -34,7 +32,7 @@ namespace Client.Tests
             renCmd.LocalName = "TestFile.txt";
             renCmd.OldName = "NewTestFile.txt";
 
-            Assert.Equal(0, Modify.Rename(ref testClient, renCmd, fp));
+            Assert.Equal(0, Modify.Rename(ref client, renCmd, fp));
 
             Assert.True(File.Exists(@"UnitTesting\NewTestFile.txt"));
 
@@ -61,7 +59,7 @@ namespace Client.Tests
             renCmd.OldName = "TestFile.txt";
             renCmd.NewName = "NewTestFile.txt";
 
-            Assert.Equal(0, Modify.Rename(ref testClient, renCmd, fp));
+            Assert.Equal(0, Modify.Rename(ref client, renCmd, fp));
 
             Assert.True(File.Exists(@"UnitTesting\NewTestFile.txt"));
 
@@ -80,7 +78,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTest\" };
 
-            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref client, cmd, dir));
         }
 
         [Fact]
@@ -93,9 +91,7 @@ namespace Client.Tests
             
             var dir = new FilePath() { Remote = @"\UnitTest\" };
             
-            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
-            
-            testClient.Disconnect();
+            Assert.Equal(-1, Modify.Rename(ref client, cmd, dir));
         }
 
         [Fact]
@@ -108,7 +104,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTest\" };
 
-            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref client, cmd, dir));
 
         }
 
@@ -122,7 +118,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTest.txt\" };
 
-            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref client, cmd, dir));
         }
 
         [Fact]
@@ -136,7 +132,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
-            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref client, cmd, dir));
         }
 
         [Fact]
@@ -150,7 +146,7 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
-            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref client, cmd, dir));
         }
 
         [Fact]
@@ -164,9 +160,10 @@ namespace Client.Tests
 
             var dir = new FilePath() { Remote = @"\UnitTesttxt\" };
 
-            Assert.Equal(-1, Modify.Rename(ref testClient, cmd, dir));
+            Assert.Equal(-1, Modify.Rename(ref client, cmd, dir));
+        }
 
-		    FtpClient client = A.Fake<FtpClient>();
+		FtpClient client = A.Fake<FtpClient>();
         Commands.Put commands = A.Fake<Commands.Put>();
         Program.FilePath path = new();
 
