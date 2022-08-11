@@ -16,9 +16,6 @@ namespace Client
                 return -1;
             }
 
-            if (!string.IsNullOrEmpty(files.Path) && files?.Files?.Count() == 0)
-                Console.WriteLine("\nDownloading File: " + files.Path);
-
             if (files.Files.Count() >= 1)
             {
                 var toCollect = new List<string>();
