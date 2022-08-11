@@ -143,8 +143,7 @@ namespace Client
 
         public static int Disconnect(ref FtpClient client, ref Logger? logger)
         {
-            client.Disconnect();
-            logger = null;
+            client.Disconnect();   
             Console.WriteLine("--- All Connections Terminated ---\n");
             return 0;
         }
